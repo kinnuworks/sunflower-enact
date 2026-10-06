@@ -3,15 +3,15 @@
 Short answers you can say out loud. The file to point at is in brackets.
 
 **Is the demo real or staged?**
-Real. The cluster is the challenge's own. The requests are real HTTP requests; the screen draws
-one stitch per request from the measuring tool's log. The grid numbers are real published data
-for 29 September, replayed faster. The only thing we speed up is the clock.
+Real. The cluster is the challenge's own. The requests are real HTTP requests, counted by a
+separate measuring tool that never touches the app. The grid numbers are published figures for
+29 September. The one thing we change is the speed of the clock.
 [`docs/demo/run.json`, `data/README.md`]
 
 **Why doesn't ENACT do this already?**
 Its policy operator's permissions cover policies and nodes only, not apps. It writes its choice into the
 policy's status and stops there, and the plug-in pins the app once at deploy time. That looks
-like a deliberate split: one part decides, another acts. We built the part that acts.
+like a deliberate split between deciding and acting, and the acting half had not been written.
 [`docs/platform-behaviour.md`]
 
 **Isn't this just the Kubernetes descheduler, or a rolling restart?**
@@ -20,10 +20,11 @@ policy and it stops the old pod first. Sunflower follows ENACT's named choice, s
 copy before stopping the old one, and has rules about when not to move.
 
 **How do you lose zero requests?**
-Three things. The new copy starts first and must answer health checks before the old one is
-touched. The old copy is told to drain: it stops taking new connections and asks existing
-clients to reconnect. Then it shuts down gracefully. We found the second step was needed the
-hard way: before it, we saw a request dropped just after a move.
+Four things. The new copy starts first. It calls its own endpoints 40 times before it reports
+ready, so its first real request does not land on a cold JVM. The old copy is then told to
+drain: it stops taking new connections and asks existing clients to reconnect. Last, it shuts
+down gracefully. We added the warm-up and the drain after measuring losses without them: 4 of
+529 requests in one run on a busy laptop. The three runs since lost none.
 [`greencharge/.../placement/PlacementInfo.java`]
 
 **What if the new machine is broken?**
@@ -45,16 +46,17 @@ We don't claim a number. On this cluster the energy figures are model estimates 
 virtual machine, nearly identical for every node. What we can measure is time spent out of
 policy, so that is what we report.
 
-**Why 48 seconds and 13? Those are tiny.**
+**Why 48 seconds and 13? Those are small.**
 They are replayed seconds. Half an hour of grid data passes every four seconds, so 48 seconds
-on screen is about six hours of the real day, against about an hour and a half.
+on screen is six hours of the real day, against an hour and a half. The screen says so under
+each timer.
 
 **Did you do the dataspace step?**
 Not yet. The plug-in asks for a connector address and key that are not in the challenge
 material. We asked the mentors and are waiting. The feed file path is wired, and the app's
 badge says honestly where its data comes from: a replay of public grid data.
 
-**What did you use the AI assistant for?**
+**What did you use ENACT's assistant for?**
 Generating the runtime policy. On default settings it looped 23 times and wrote a policy for
 the wrong region. We traced it to the model's context being too small for the plug-in's
 prompt, fixed that, and it worked in one call. It still dropped two fields, so we kept the
@@ -68,7 +70,8 @@ a database needs its data to move too. We say so in the README.
 Offer the findings and the four setup fixes to the ENACT team, and suggest the plug-in record
 which policy placed each app, so tools like this do not need an extra annotation.
 
-**How much of this did AI write?**
-We used an AI coding assistant throughout, as most teams will have. What it could not do for us
-is run the platform and see what actually happens. The gap we found, the lost-request bug and
-the 39 findings all came from running things and reading the results.
+**Where do the Application Controller's inputs come from?**
+The green share and the region are read from the machine's own labels. The CPU, memory and
+network figures are fixed at values that pass the policy, because our measuring tool does not
+collect them. So the verdict on screen turns only on green share and region, and we say that
+in the code.

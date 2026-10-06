@@ -327,6 +327,16 @@ func main() {
 	}
 
 	cluster := newClusterWatcher()
+	asker := &http.Client{Timeout: 2 * time.Second}
+	// Each copy is asked for its own policy check when its node or that node's green share
+	// changes, and otherwise every few seconds: often enough to follow the day, rarely enough
+	// to add nothing to the load being measured.
+	type asked struct {
+		node  string
+		ratio float64
+		at    time.Time
+	}
+	lastAsked := map[string]asked{}
 	cluster.onPoll = func(st ClusterState, dt float64) {
 		now := time.Now()
 		for _, n := range st.Nodes {
@@ -354,6 +364,19 @@ func main() {
 				}
 			}
 			h.account(t.name, ratio, min, dt)
+			for _, n := range st.Nodes {
+				if n.Name == node && n.GreenRatio != nil {
+					if p := lastAsked[t.name]; p.node == n.Name && p.ratio == *n.GreenRatio && time.Since(p.at) < 5*time.Second {
+						continue
+					}
+					lastAsked[t.name] = asked{node: n.Name, ratio: *n.GreenRatio, at: time.Now()}
+					go func(t target, n NodeView) { // off the poll's path: a slow app must not delay the clock
+						if action, reason, ok := advice(ctx, asker, t, n); ok {
+							h.timeline.advise(t.name, action, reason, time.Now())
+						}
+					}(t, n)
+				}
+			}
 		}
 	}
 	go cluster.run(ctx)

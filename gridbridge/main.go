@@ -279,6 +279,9 @@ func main() {
 	mux.HandleFunc("POST /pause", set(func() { b.playing = false }))
 	mux.HandleFunc("POST /reset", set(func() {
 		b.index, b.playing, b.drill = 0, false, nil
+		// Something else may have relabelled the nodes since the last run (a stress test does),
+		// so a rewind writes every label again instead of trusting what was last sent.
+		b.lastSent = map[string]string{}
 		b.history = map[string][]float64{}
 	}))
 	mux.HandleFunc("POST /drill", func(w http.ResponseWriter, r *http.Request) {

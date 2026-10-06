@@ -59,12 +59,14 @@ ingress:
           pathType: Prefix
   tls: []
 
+# Two cores at the limit: a JVM that is throttled while it starts answers its first requests
+# late, and a move is exactly when a new copy is starting.
 resources:
   limits:
-    cpu: "1"
+    cpu: "2"
     memory: 512Mi
   requests:
-    cpu: 100m
+    cpu: 250m
     memory: 256Mi
 
 env:

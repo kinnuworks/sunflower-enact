@@ -10,15 +10,27 @@ k() { kubectl --context "$CTX" "$@"; }
 h() { helm --kube-context "$CTX" "$@"; }
 
 curl -fsS -X POST "$WITNESS/grid/reset" >/dev/null
-# The policy operator re-ranks on its own schedule (every 30 s), so wait until its choice has
-# been the same for longer than that before treating it as the choice for the scene's start.
-CHOSEN=""; SINCE=$SECONDS
-for _ in $(seq 1 90); do
-  NOW="$(k get runtimepolicy -n enact greencharge-standard -o jsonpath='{.status.chosenNode}')"
-  [ "$NOW" = "$CHOSEN" ] || { CHOSEN="$NOW"; SINCE=$SECONDS; }
-  [ -n "$CHOSEN" ] && [ $((SECONDS - SINCE)) -ge 40 ] && break
+# Put every node's green share back to the replay's opening figure. Older builds of the replay
+# skip a label they believe is unchanged, which leaves a stress test's value in place.
+curl -fsS "$WITNESS/grid/state" | python3 -c '
+import json, sys, urllib.request
+for n in json.load(sys.stdin)["nodes"]:
+    body = json.dumps({"add": {"enact.eu/green-ratio": "%.2f" % n["greenRatio"]}}).encode()
+    req = urllib.request.Request("http://localhost:35580/api/v1/nodes/%s/labels" % n["node"], body, {"Content-Type": "application/json"})
+    urllib.request.urlopen(req, timeout=10).read()
+'
+# The policy operator re-ranks on its own schedule; we have seen it take over a minute after a
+# label change. With both workers above the policy's minimum it settles on the greener one, so
+# wait until its choice is that node, three readings in a row, before pinning anything to it.
+greenest() { k get nodes -l enact.eu/green-ratio -o jsonpath='{range .items[*]}{.metadata.labels.enact\.eu/green-ratio}{" "}{.metadata.name}{"\n"}{end}' | sort -rn | head -1 | cut -d' ' -f2; }
+CHOSEN=""; SAME=0
+for _ in $(seq 1 120); do
+  CHOSEN="$(k get runtimepolicy -n enact greencharge-standard -o jsonpath='{.status.chosenNode}')"
+  if [ -n "$CHOSEN" ] && [ "$CHOSEN" = "$(greenest)" ]; then SAME=$((SAME + 1)); else SAME=0; fi
+  [ "$SAME" -ge 3 ] && break
   sleep 2
 done
+[ "$SAME" -ge 3 ] || echo "warning: the policy operator has not settled on the greener node; starting from its current choice, $CHOSEN" >&2
 [ -n "$CHOSEN" ] || { echo "the policy operator has not chosen a node" >&2; exit 1; }
 
 h upgrade --install standard "$ROOT/greencharge/chart" -n enact \

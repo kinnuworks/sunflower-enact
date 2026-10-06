@@ -9,7 +9,7 @@ label() { curl -fsS -m 10 -o /dev/null -X POST "$API/api/v1/nodes/$1/labels" -H 
 pinned() { k get deploy -n enact sunflower-greencharge -o jsonpath='{.spec.template.spec.nodeSelector.kubernetes\.io/hostname}'; }
 status() { k get deploy -n enact sunflower-greencharge -o jsonpath='{.metadata.annotations.sunflower\.enact\.eu/status}'; }
 
-# Short guard rails so the soak takes minutes, not hours. The defaults are restored at the end.
+# Short guard rails so the soak takes minutes, not hours. The replay's settings are restored at the end.
 k patch deploy -n enact sunflower --type=json -p '[{"op":"replace","path":"/spec/template/spec/containers/0/args","value":["--settle=3s","--dwell=4s","--margin=0.10","--max-moves-per-hour=0"]}]' >/dev/null
 k rollout status -n enact deploy/sunflower --timeout=90s >/dev/null
 label enact-dev-worker 0.85; label enact-dev-worker2 0.90; sleep 12
@@ -27,7 +27,7 @@ for i in $(seq 1 "$N"); do
   sleep 4
 done
 
-k patch deploy -n enact sunflower --type=json -p '[{"op":"replace","path":"/spec/template/spec/containers/0/args","value":["--settle=20s","--dwell=60s","--margin=0.10"]}]' >/dev/null
+k apply -f "$(dirname "$0")/sunflower.yaml" >/dev/null   # back to the guard rails the replay uses
 label enact-dev-worker 0.85; label enact-dev-worker2 0.90
 mkdir -p "$(dirname "$OUT")"
 python3 - "$OUT" "$START" "$N" <<'PY'

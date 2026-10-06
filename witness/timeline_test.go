@@ -48,3 +48,15 @@ func TestTimelineRequestsMarkFailuresAndIgnoreOldOnes(t *testing.T) {
 		t.Fatalf("requests = %v, want [[1 0] [2 -1]]", got)
 	}
 }
+
+func TestTimelineKeepsAdvicePerChangeOfAction(t *testing.T) {
+	tl := newTimeline()
+	now := tl.start
+	tl.advise("app", "no_action", "fine", now)
+	tl.advise("app", "no_action", "still fine", now.Add(time.Second))
+	tl.advise("app", "relocate", "green mix 49%", now.Add(2*time.Second))
+	got := tl.advised["app"]
+	if len(got) != 2 || got[1].Action != "relocate" || got[1].T != 2 {
+		t.Fatalf("advice = %+v, want no_action then relocate at 2s", got)
+	}
+}

@@ -19,6 +19,14 @@ type timeline struct {
 	breaking map[string][][2]float64 // target -> [from, to]; to = -1 while still below
 	marks    []timeMark              // when the grid replay reached each data timestamp
 	choice   [][2]float64            // [seconds, node index]: the node the policy operator names, one point per change
+	advised  map[string][]adviceMark // target -> what the app's own policy check said, one entry per change
+}
+
+// adviceMark is one answer from a copy's POST /adaptation/recommendation.
+type adviceMark struct {
+	T      float64 `json:"t"`
+	Action string  `json:"action"`
+	Reason string  `json:"reason"`
 }
 
 type timeMark struct {
@@ -41,6 +49,7 @@ func (tl *timeline) reset() {
 	tl.nodes, tl.nodeIdx = nil, map[string]int{}
 	tl.requests, tl.ratios, tl.breaking = map[string][][2]float64{}, map[string][][2]float64{}, map[string][][2]float64{}
 	tl.marks, tl.choice = nil, nil
+	tl.advised = map[string][]adviceMark{}
 	tl.mu.Unlock()
 }
 
@@ -125,6 +134,17 @@ func (tl *timeline) chose(node string, now time.Time) {
 	tl.choice = append(tl.choice, [2]float64{tl.since(now), i})
 }
 
+// advise records what a copy's own policy check recommended, keeping an entry per change of action.
+func (tl *timeline) advise(target, action, reason string, now time.Time) {
+	tl.mu.Lock()
+	defer tl.mu.Unlock()
+	marks := tl.advised[target]
+	if n := len(marks); n > 0 && marks[n-1].Action == action {
+		return
+	}
+	tl.advised[target] = append(marks, adviceMark{T: tl.since(now), Action: action, Reason: reason})
+}
+
 func (tl *timeline) snapshot() map[string]any {
 	tl.mu.Lock()
 	defer tl.mu.Unlock()
@@ -140,10 +160,14 @@ func (tl *timeline) snapshot() map[string]any {
 	for k, v := range tl.breaking {
 		breaking[k] = append([][2]float64(nil), v...)
 	}
+	advised := map[string][]adviceMark{}
+	for k, v := range tl.advised {
+		advised[k] = append([]adviceMark(nil), v...)
+	}
 	return map[string]any{
 		"start": tl.start.UTC().Format(time.RFC3339Nano), "seconds": tl.since(time.Now()),
 		"nodes": append([]string(nil), tl.nodes...), "requests": requests, "ratios": ratios,
 		"breaking": breaking, "marks": append([]timeMark(nil), tl.marks...),
-		"choice": append([][2]float64(nil), tl.choice...),
+		"choice": append([][2]float64(nil), tl.choice...), "advice": advised,
 	}
 }

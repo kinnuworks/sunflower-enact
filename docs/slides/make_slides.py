@@ -45,14 +45,14 @@ def add_image_rel(n, target):
 # the picture: the race screen, scaled down so the file stays small
 img = f'{work}/ppt/media/race.png'
 shutil.copy(f'{R}/docs/img/race.png', img); subprocess.run(['sips', '-Z', '1800', img], capture_output=True)
-ratio = 1612 / 2880
+ratio = 1600 / 2880
 
 # 1. title
 x = slide(1)
 x = x.replace('<a:t>Project_Name</a:t>', '<a:t>Sunflower</a:t>')
 x = x.replace('<a:r><a:t></a:t></a:r><a:endParaRPr/></a:p></p:txBody></p:sp></p:spTree>',
-              run('GreenCharge tells drivers where the clean power is. Sunflower makes GreenCharge go there itself.', sz=1500) + '</a:p>'
-              + para([run('Challenge 3 · ENACT, Kubernetes Dynamic Adaptation', sz=1200, color='C9D6EA')], after=0) + '</p:txBody></p:sp></p:spTree>')
+              run('Moves a running app to the computer with the cleanest power, without losing a request.', sz=1500) + '</a:p>'
+              + para([run('Challenge 3, ENACT: Kubernetes Dynamic Adaptation', sz=1200, color='C9D6EA')], after=0) + '</p:txBody></p:sp></p:spTree>')
 x = x.replace('indent="-342900" lvl="0" marL="457200"', 'indent="0" lvl="0" marL="0"')
 save(1, x)
 
@@ -61,8 +61,8 @@ x = slide(2)
 x = set_body(x, [
     para([run('GitHub repo: ', sz=1400, b=True), run('github.com/kinnuworks/sunflower-enact', sz=1400, color=NAVY, b=True)], after=900),
     para([run('Start with the README: ', sz=1300, b=True), run('the result, the challenge checklist with a screenshot of every SDK step, and how to run it.', sz=1300)], bullet=True),
-    para([run('A recorded run you can play in a browser: ', sz=1300, b=True), run('docs/demo. It is the measured data, unedited.', sz=1300)], bullet=True),
-    para([run('Everything measured is in the repo: ', sz=1300, b=True), run('evidence/ holds the raw result files behind every number we quote.', sz=1300)], bullet=True),
+    para([run('A recorded run you can play in a browser: ', sz=1300, b=True), run('docs/demo, drawn from the measured data, unedited.', sz=1300)], bullet=True),
+    para([run('The raw results: ', sz=1300, b=True), run('evidence/ holds the file behind every number we quote.', sz=1300)], bullet=True),
     para([run('What we are giving back to ENACT: ', sz=1300, b=True), run('docs/field-report.md, 39 findings, each with the fix we used.', sz=1300)], bullet=True),
     para([run('Licence: Apache-2.0', sz=1300)], bullet=True, after=0),
 ])
@@ -72,22 +72,22 @@ save(2, x)
 x = slide(3)
 PW = 4480000; PH = int(PW * ratio)
 x = set_body(x, [
-    para([run('ENACT’s policy operator names the best machine for an app, and keeps that answer current as the grid changes.', sz=1300)], bullet=True),
-    para([run('Nothing acts on the answer after deploy day. ', sz=1300, b=True), run('The SDK pins the app once. When its machine’s power turns dirty, GreenCharge stays there, breaking its own green rule.', sz=1300)], bullet=True),
-    para([run('Sunflower is a small controller that carries out ENACT’s choice. ', sz=1300, b=True), run('It moves the app when the choice changes and the change lasts, without losing a request. It never chooses a machine itself.', sz=1300)], bullet=True),
-    para([run('We did the challenge checklist through the ENACT SDK, then built Sunflower on top of it.', sz=1300)], bullet=True, after=0),
+    para([run('ENACT’s policy operator names the best machine for an app and keeps that answer current as the grid changes.', sz=1300)], bullet=True),
+    para([run('After deploy day the app does not follow. ', sz=1300, b=True), run('The SDK pins it once, so when its machine’s power turns dirty, GreenCharge stays there, below its own 60% rule.', sz=1300)], bullet=True),
+    para([run('Sunflower is a small controller that reads ENACT’s choice and moves the app to it, ', sz=1300, b=True), run('once the change has lasted, without losing a request.', sz=1300)], bullet=True),
+    para([run('We completed the challenge checklist in the ENACT SDK first, then built Sunflower on top.', sz=1300)], bullet=True, after=0),
 ], xfrm=(311700, 1152475, 3830000, 3416400))
-x = add(x, [pic(201, 'rId9', 4352000, 1235000, PW, PH, 'Two copies of GreenCharge over one replayed day of grid data: the standard build stays put, the copy with Sunflower moves.'),
+x = add(x, [pic(201, 'rId9', 4352000, 1235000, PW, PH, 'Two copies of GreenCharge over one replayed day of grid data: the standard build stays on Machine A, the copy with Sunflower moves to Machine B.'),
             box(202, 'Caption', 4352000, 1235000 + PH + 70000, PW, 420000,
-                [para([run('One real run on the challenge cluster. Each stitch is a request, coloured by the machine that answered. Top lane: standard build. Bottom lane: with Sunflower.', sz=950, color=SOFT)], after=0, line=105)])])
+                [para([run('One real run on the challenge cluster. Left: the standard build, 48 s on dirty power. Right: with Sunflower, 12 s. Each was sent 507 requests and lost none.', sz=950, color=SOFT)], after=0, line=105)])])
 add_image_rel(3, 'race.png'); save(3, x)
 
 # 4. highlights: three numbers, then what stands behind them
 x = slide(4)
 CW = 2700000; X0 = 311700; GAP = 210300; Y = 1180000
-stats = [('0', 'requests lost', 'across 30 moves in a row, 2,632 requests, on the challenge cluster'),
-         ('48 → 13 s', 'breaking its green rule', 'standard build against Sunflower, over a real day of British grid data'),
-         ('39', 'findings given back', 'ENACT rough edges we hit, each written up with the fix we used')]
+stats = [('0', 'requests lost', 'across 30 moves in a row, 1,777 requests, on the challenge cluster'),
+         ('48 → 12 s', 'on dirty power', 'standard build against Sunflower, over a real day of British grid data: 6 hours against 1.5'),
+         ('39', 'findings given back', 'problems we hit in ENACT, each written up with the fix we used')]
 shapes = []
 for k, (big, label, small) in enumerate(stats):
     cx = X0 + k * (CW + GAP)
@@ -96,9 +96,9 @@ for k, (big, label, small) in enumerate(stats):
         para([run(label, sz=1400, b=True, color=INK)], after=200, line=100),
         para([run(small, sz=1050, color=SOFT)], after=0, line=108)]))
 x = set_body(x, [
-    para([run('Checklist done through the ENACT SDK: ', sz=1200, b=True), run('policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the AI assistant. Screenshot of every step in the repo.', sz=1200)], bullet=True, after=400),
-    para([run('Sunflower follows, it does not decide: ', sz=1200, b=True), run('one annotation opts an app in. It waits out short dips, ignores near-ties, limits how often it moves, and undoes a move that fails.', sz=1200)], bullet=True, after=400),
-    para([run('Honest about what is open: ', sz=1200, b=True), run('the dataspace step is waiting on connector details from the mentors, and we make no carbon-saving claim, only time out of policy, which we measured.', sz=1200)], bullet=True, after=0),
+    para([run('Checklist done in the ENACT SDK: ', sz=1200, b=True), run('policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the SDK’s assistant. The repo has a screenshot of every step.', sz=1200)], bullet=True, after=400),
+    para([run('ENACT stays in charge: ', sz=1200, b=True), run('Sunflower reads the policy’s chosen machine and has no ranking of its own. It waits out short dips, ignores near-ties, limits how often it moves, and undoes a move that fails.', sz=1200)], bullet=True, after=400),
+    para([run('Still open: ', sz=1200, b=True), run('the dataspace step, which needs connector details we have asked the mentors for. We make no carbon-saving claim. We report time on dirty power, which we measured.', sz=1200)], bullet=True, after=0),
 ], xfrm=(311700, 2700000, 8520600, 1900000))
 x = add(x, shapes); save(4, x)
 

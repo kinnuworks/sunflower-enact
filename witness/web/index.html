@@ -5,190 +5,175 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sunflower</title>
 <style>
-  @font-face { font-family: "Fraunces"; src: url("fonts/fraunces.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
-  /* Figures are always set in the serif, including inside sentences: the numbers are the point of this page. */
-  @font-face { font-family: "Figures"; src: url("fonts/fraunces.woff2") format("woff2"); font-weight: 100 900; font-display: block; unicode-range: U+0030-0039, U+0025; }
-  @font-face { font-family: "Atkinson"; src: url("fonts/atkinson-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
-  @font-face { font-family: "Atkinson"; src: url("fonts/atkinson-700.woff2") format("woff2"); font-weight: 700; font-display: block; }
+  /* Overpass: the lettering of road signs. See fonts/README.md for why. */
+  @font-face { font-family: "Overpass"; src: url("fonts/overpass.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
   :root {
-    --paper: #efe5cf; --sheet: #fbf6e8; --cloth: #f3ead6; --ink: #2a2017; --soft: #6b5c48; --hem: #d6c7a8;
-    --a: #27508f; --b: #d98a00; --b-text: #9a6200; --rust: #b3432a; --leaf: #47752f; --lost: #d42a1c;
-    --side: 268px; --tally: 236px;
+    --page: #f4f6f2; --panel: #ffffff; --ink: #20302a; --quiet: #63716a; --line: #dfe4de; --ahead: #e9ece7;
+    --clean: #f5c84b; --dirty: #c2c9cc; --leaf: #2c7a51; --lost: #d64545;
   }
   * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.4 "Figures", "Atkinson", "Gill Sans", "Trebuchet MS", sans-serif; font-feature-settings: "lnum", "tnum"; }
-  .display { font-family: "Fraunces", "Iowan Old Style", Georgia, serif; font-variation-settings: "SOFT" 100, "WONK" 0; font-feature-settings: "lnum", "tnum"; }
-  .page { max-width: 1560px; margin: 0 auto; padding: 10px 30px 8px; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 400 17px/1.45 "Overpass", "Helvetica Neue", Arial, sans-serif; font-variant-numeric: tabular-nums lining-nums; }
+  .page { max-width: 1320px; margin: 0 auto; padding: 18px 36px 12px; }
 
-  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-  .brand { display: flex; align-items: center; gap: 14px; }
-  .brand svg { width: 54px; height: 54px; flex: none; }
-  .brand h1 { margin: 0; font-size: 42px; font-weight: 620; line-height: 1; letter-spacing: -0.01em; }
-  .brand p { margin: 4px 0 0; font-size: 17.5px; color: var(--soft); }
+  header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 32px; }
+  .brand { display: flex; align-items: center; gap: 16px; }
+  .brand svg { width: 60px; height: 60px; flex: none; }
+  .brand h1 { margin: 0; font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; }
+  .brand p { margin: 6px 0 0; font-size: 18px; line-height: 1.3; }
+  .brand .name { margin-top: 2px; font-size: 15.5px; color: var(--quiet); }
   .clock { text-align: right; }
-  .clock .when { font-size: 29px; font-weight: 560; line-height: 1.05; }
-  .clock .note { font-size: 15px; color: var(--soft); margin-top: 2px; }
-  .controls { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; flex-wrap: wrap; }
-  button { font: inherit; font-size: 15.5px; padding: 5px 16px; border-radius: 999px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
-  button:hover { background: rgba(42, 32, 23, .07); }
-  button.primary { background: var(--ink); color: var(--sheet); }
-  button.primary:hover { background: #46382a; }
-  button:focus-visible { outline: 3px solid var(--b); outline-offset: 2px; }
-  .recorded { display: inline-block; font-size: 14px; font-weight: 700; color: var(--rust); border: 1.5px solid var(--rust); border-radius: 999px; padding: 2px 11px; margin-bottom: 5px; }
+  .clock .when { font-size: 22px; font-weight: 700; line-height: 1.2; }
+  .clock .note { font-size: 14.5px; color: var(--quiet); }
+  .controls { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
+  button { font: inherit; font-size: 15.5px; font-weight: 600; padding: 8px 16px 6px; border-radius: 8px; border: 1.5px solid #b9c2bb; background: var(--panel); color: var(--ink); cursor: pointer; }
+  button:hover { border-color: var(--ink); }
+  button:disabled { opacity: .55; cursor: default; }
+  button.go { background: var(--leaf); border-color: var(--leaf); color: #fff; }
+  button.go:hover { background: #236342; }
+  button:focus-visible { outline: 3px solid var(--clean); outline-offset: 2px; }
+  .recorded { display: inline-block; font-size: 13.5px; font-weight: 700; color: var(--ink); background: var(--clean); border-radius: 6px; padding: 3px 10px 1px; margin-bottom: 6px; }
 
-  .board { margin-top: 11px; background: var(--sheet); border: 1.5px solid var(--ink); border-radius: 6px; box-shadow: 5px 6px 0 rgba(42, 32, 23, .13); }
-  .row { display: grid; grid-template-columns: var(--side) minmax(0, 1fr) var(--tally); column-gap: 20px; padding: 7px 22px; align-items: center; }
-  .row + .row { border-top: 2px dashed var(--hem); }
-  .row.pick, .row.axis { padding-top: 4px; padding-bottom: 4px; }
-  .row.axis { border-top: 0; padding-top: 0; }
-  canvas { display: block; width: 100%; }
-  h2 { margin: 0; font-size: 26px; font-weight: 600; line-height: 1.1; }
-  .sub { margin: 4px 0 0; font-size: 15px; color: var(--soft); line-height: 1.3; }
-  .small { font-size: 14px; color: var(--soft); line-height: 1.3; }
+  h2 { margin: 0; font-size: 21px; font-weight: 700; line-height: 1.2; }
+  .quiet { color: var(--quiet); }
 
-  .legend { list-style: none; margin: 9px 0 0; padding: 0; }
-  .legend li { display: grid; grid-template-columns: 22px 1fr auto; column-gap: 8px; align-items: center; padding: 3px 0; }
-  .thread { height: 12px; border-radius: 3px; }
-  .legend b { font-size: 17px; }
-  .legend small { display: block; font-size: 13.5px; color: var(--soft); line-height: 1.15; }
-  .legend .pct { font-size: 29px; font-weight: 600; }
-  .legend .pct.low { color: var(--rust); }
-  .drill { font-size: 12px; font-weight: 700; color: var(--rust); border: 1px solid var(--rust); border-radius: 9px; padding: 0 6px; margin-left: 6px; vertical-align: 2px; }
+  /* The day: one bar per machine, then the machine ENACT picks. All three share one time axis. */
+  .day { margin-top: 20px; }
+  .day .top { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 24px; margin-bottom: 10px; }
+  .legend { display: flex; gap: 20px; font-size: 14.5px; color: var(--quiet); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 18px; height: 12px; border-radius: 3px; display: block; }
+  .strip { display: grid; grid-template-columns: 250px minmax(0, 1fr) 112px; column-gap: 18px; align-items: center; padding: 4px 0; }
+  .strip .who { font-size: 16px; line-height: 1.2; }
+  .strip .who b { font-weight: 700; }
+  .strip .who small { display: block; font-size: 14px; color: var(--quiet); }
+  .strip .now { font-size: 16px; text-align: right; white-space: nowrap; }
+  .strip .now b { font-size: 21px; font-weight: 700; }
+  .bar { position: relative; height: 24px; border-radius: 7px; overflow: hidden; background: var(--ahead); }
+  .bar .seg { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; padding: 2px 10px 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+  .seg.clean { background: var(--clean); }
+  .seg.dirty { background: var(--dirty); }
+  .seg.pick { background: #dbe6de; box-shadow: inset -2px 0 0 var(--panel); }
+  .bar .lost { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; background: var(--lost); }
+  .hours { position: relative; height: 20px; font-size: 13px; color: var(--quiet); }
+  .hours span { position: absolute; top: 3px; transform: translateX(-50%); white-space: nowrap; }
+  .hours span:first-child { transform: none; }
 
-  .where { margin-top: 6px; font-size: 16px; display: flex; flex-wrap: wrap; gap: 6px 9px; align-items: center; }
-  .chip { font-size: 14px; font-weight: 700; border-radius: 999px; padding: 2px 11px; border: 1.5px solid; white-space: nowrap; }
-  .chip.ok { color: var(--leaf); }
-  .chip.bad { color: #fff8ec; background: var(--rust); border-color: var(--rust); }
-  .chip.wait { color: var(--b-text); }
+  /* The comparison: the same app twice, side by side. */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 16px; }
+  .build { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 28px 14px; }
+  .build h2 { font-size: 26px; font-weight: 800; }
+  .build .what { margin: 3px 0 0; font-size: 16px; color: var(--quiet); }
+  .build .time { margin-top: 10px; font-size: 66px; font-weight: 800; line-height: .95; letter-spacing: -0.02em; }
+  .build .cap { font-size: 17px; margin-top: 2px; }
+  .build .real { color: var(--quiet); }
+  .build .ran { margin-top: 12px; }
+  .build .ran .label { font-size: 14.5px; color: var(--quiet); margin-bottom: 5px; }
+  .build .bar { height: 42px; border-radius: 10px; }
+  .build .bar .seg { font-size: 15.5px; padding-left: 12px; }
+  .flag { position: relative; height: 26px; font-size: 14.5px; font-weight: 600; }
+  .flag span { position: absolute; top: 4px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .flag svg { width: 18px; height: 18px; }
+  .build .facts { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 20px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 16px; }
+  .facts b { font-weight: 700; }
+  .check { margin-top: 6px; font-size: 15px; color: var(--quiet); }
+  .check b { color: var(--ink); font-weight: 700; }
+  .facts .some { color: var(--lost); }
+  .dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; }
 
-  .tally { display: grid; row-gap: 3px; }
-  .tally .cap { font-size: 13.5px; color: var(--soft); line-height: 1.2; }
-  .tally .time { font-size: 62px; font-weight: 560; line-height: .95; letter-spacing: -0.02em; }
-  .tally .time.hot { color: var(--rust); }
-  .tally .lost { font-size: 17px; margin-top: 4px; }
-  .tally .lost b { font-family: "Fraunces", Georgia, serif; font-feature-settings: "lnum", "tnum"; font-size: 27px; font-weight: 600; margin-right: 7px; }
-  .tally .lost b.bad { color: var(--lost); }
-  .pickname { font-size: 15px; }
-
-  .log { margin-top: 10px; display: grid; grid-template-columns: var(--side) minmax(0, 1fr); column-gap: 20px; padding: 0 22px; align-items: start; }
-  .log h3 { margin: 2px 0 0; font-size: 18px; font-weight: 600; line-height: 1.15; white-space: nowrap; }
-  .log ol { list-style: none; margin: 0; padding: 0; }
-  .log li { display: grid; grid-template-columns: 58px 84px 1fr; column-gap: 10px; padding: 2px 0; font-size: 15.5px; line-height: 1.3; }
-  .log li + li { border-top: 1px solid var(--hem); }
-  .log time { color: var(--soft); font-feature-settings: "tnum"; }
-  .log .kind { font-family: "Fraunces", Georgia, serif; font-style: italic; font-weight: 560; }
-  .kind.Moved, .kind.Placed { color: var(--leaf); }
-  .kind.Aborted { color: var(--rust); }
-  .log li.old { color: var(--soft); }
-  .log li.old span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  footer { margin: 5px 22px 0; font-size: 12.5px; color: var(--soft); }
+  .latest { margin-top: 12px; display: grid; grid-template-columns: auto auto auto minmax(0, 1fr); column-gap: 14px; row-gap: 2px; font-size: 15.5px; }
+  .latest .head { font-weight: 700; grid-column: 1; grid-row: 1 / span 3; padding-right: 10px; }
+  .latest time { grid-column: 2; }
+  .latest .earlier { color: var(--quiet); }
+  .latest time { color: var(--quiet); }
+  .latest span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .latest b { font-weight: 700; }
+  @media (max-height: 860px) { .latest .earlier { display: none; } }
+  footer { margin-top: 8px; font-size: 12.5px; color: var(--quiet); }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  @media (max-width: 1180px) { :root { --side: 220px; --tally: 190px; } .tally .time { font-size: 50px; } }
+  @media (max-height: 740px) { .page { padding-top: 12px; } .brand svg { width: 50px; height: 50px; } .day { margin-top: 12px; } .strip { padding: 2px 0; } .compare { margin-top: 10px; } .build { padding: 14px 26px 12px; } .build .time { font-size: 58px; margin-top: 8px; } .build .ran { margin-top: 8px; } .latest { margin-top: 10px; } }
+  @media (max-width: 900px) { header, .compare { grid-template-columns: 1fr; row-gap: 14px; } .clock { text-align: left; } .controls { justify-content: flex-start; } .strip { grid-template-columns: 1fr; row-gap: 3px; } .strip .now { text-align: left; } }
 </style>
 </head>
 <body>
 <div class="page">
   <header>
     <div class="brand">
-      <svg viewBox="0 0 60 60" aria-hidden="true">
-        <g fill="#e6a100" stroke="#2a2017" stroke-width="1.1" stroke-linejoin="round" id="petals"></g>
-        <circle cx="30" cy="30" r="10.5" fill="#5a3712" stroke="#2a2017" stroke-width="1.1"/>
-        <g fill="#2a2017"><circle cx="27" cy="27.5" r="1"/><circle cx="32.5" cy="26.5" r="1"/><circle cx="34" cy="31.5" r="1"/><circle cx="29.5" cy="33.5" r="1"/><circle cx="25.8" cy="31.6" r="1"/><circle cx="30.2" cy="30" r="1"/></g>
-      </svg>
+      <svg viewBox="0 0 60 60" aria-hidden="true"><g fill="#f5c84b" id="petals"></g><circle cx="30" cy="30" r="11" fill="#20302a"/></svg>
       <div>
-        <h1 class="display">Sunflower</h1>
-        <p>GreenCharge tells drivers where the clean power is. Sunflower makes GreenCharge go there itself.</p>
+        <h1>Sunflower</h1>
+        <p>Moves a running app to the computer with the cleanest power, without losing a request.</p>
+        <p class="name">Like the flower that turns to face the sun, it turns your app toward clean power.</p>
       </div>
     </div>
     <div class="clock">
       <div id="recorded"></div>
-      <div class="when display" id="when">connecting…</div>
+      <div class="when" id="when">Connecting to the cluster</div>
       <div class="note" id="note"></div>
       <div class="controls" id="controls">
-        <button id="play" class="primary">Play</button>
-        <button id="reset">Restart</button>
-        <button id="drill" title="Lowers the green share of the machine Sunflower's copy is on, for five seconds">Drill: 5-second dip</button>
+        <button id="play" class="go">Play the day</button>
+        <button id="rewind">Rewind</button>
+        <button id="dip">Dip the power for 5 seconds</button>
       </div>
     </div>
   </header>
 
-  <main class="board">
-    <section class="row" aria-label="Green power behind each machine">
-      <div>
-        <h2 class="display">Where the clean power is</h2>
-        <ul class="legend" id="legend"></ul>
-      </div>
-      <canvas id="chart" height="122" role="img" aria-label="Share of green power on each machine's grid over time"></canvas>
-      <div class="small" id="rulenote"></div>
-    </section>
-    <section class="row pick" aria-label="The machine ENACT names">
-      <div class="small"><b style="color:var(--ink);font-size:16px">ENACT’s pick</b><br>the machine its policy names</div>
-      <canvas id="pick" height="26" role="img" aria-label="The machine ENACT's policy names over time"></canvas>
-      <div class="pickname" id="pickname"></div>
-    </section>
-    <section class="row" id="lane-standard" aria-label="Standard build"></section>
-    <section class="row" id="lane-sunflower" aria-label="With Sunflower"></section>
-    <section class="row axis" aria-hidden="true"><div></div><canvas id="axis" height="24"></canvas><div></div></section>
-  </main>
-
-  <section class="log" aria-label="What Sunflower did and why">
-    <h3 class="display">What Sunflower did, and why</h3>
-    <ol id="receipts"></ol>
+  <section class="day" aria-label="Each machine's power through the day">
+    <div class="top">
+      <h2>Each machine’s power through the day</h2>
+      <div class="legend"><span><i style="background:var(--clean)"></i><span id="key-clean">Clean: at least 60% wind, sun and water</span></span><span><i style="background:var(--dirty)"></i>Dirty: less than that</span></div>
+    </div>
+    <div id="strips"></div>
+    <div class="strip"><div></div><div class="hours" id="hours"></div><div></div></div>
   </section>
+
+  <section class="compare" aria-label="The same app, twice">
+    <article class="build" id="build-standard"></article>
+    <article class="build" id="build-sunflower"></article>
+  </section>
+
+  <div class="latest" id="latest"></div>
   <footer id="foot"></footer>
 </div>
 
 <script>
-// The whole screen is drawn from one document: the witness's timeline of a run (every request,
-// each machine's green share, ENACT's pick, the stretches below the green rule) plus Sunflower's
-// own log. Live, the document is fetched twice a second and the playhead is "now". For a
-// recording (?recording=file.json), the same document is loaded once and the playhead replays it.
-const LANES = [
-  { id: 'standard',  title: 'Standard build', sub: 'What the challenge checklist gives you. Placed once, on the day it was deployed.' },
-  { id: 'sunflower', title: 'With Sunflower', sub: 'Same app, same traffic, same grid. It follows ENACT’s pick.' },
+// The whole screen is drawn from one document: the witness's record of a run (every request,
+// each machine's green share, ENACT's pick, the stretches below the green rule) plus
+// Sunflower's own log. Live, the document is fetched twice a second and the playhead is "now".
+// For a recording (?recording=file.json), the same document is loaded once and replayed.
+const BUILDS = [
+  { id: 'standard',  title: 'Standard build', what: 'Stays on the machine it was deployed to.' },
+  { id: 'sunflower', title: 'With Sunflower', what: 'Moves when ENACT picks a cleaner machine and the pick holds.' },
 ];
-const INK = '#2a2017', SOFT = '#6b5c48', HEM = '#d6c7a8', CLOTH = '#f3ead6', RUST = '#b3432a', LOST = '#d42a1c';
-const THREADS = ['#27508f', '#d98a00', '#3d7a72', '#7a4a86'], THREAD_TEXT = ['#27508f', '#9a6200', '#2c5f58', '#653a70'];
-const SERIF = '"Fraunces", Georgia, serif', SANS = '"Figures", "Atkinson", "Gill Sans", sans-serif';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const pct = (r) => r == null ? '–' : Math.round(r * 100) + '%';
 const mmss = (sec) => { sec = Math.round(sec); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); };
+const hhmm = (d) => String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+// The controller's kinds of log entry, as a person would say them.
+const DID = { Placed: 'Started', Holding: 'Stayed', Watching: 'Waiting', Moving: 'Moving', Moved: 'Moved', Aborted: 'Undid a move', WouldMove: 'Would move', Ignored: 'Ignored' };
+const FLOWER = `<svg viewBox="0 0 60 60" aria-hidden="true"><g fill="#f5c84b" stroke="#20302a" stroke-width="2">${Array.from({ length: 10 }, (_, i) => `<ellipse cx="30" cy="11" rx="6" ry="10" transform="rotate(${i * 36} 30 30)"/>`).join('')}</g><circle cx="30" cy="30" r="11" fill="#20302a"/></svg>`;
 
-$('petals').innerHTML = Array.from({ length: 13 }, (_, i) => `<ellipse cx="30" cy="9.5" rx="4.6" ry="9" transform="rotate(${i * 360 / 13} 30 30)"/>`).join('');
-for (const lane of LANES) {
-  $('lane-' + lane.id).innerHTML = `
-    <div><h2 class="display">${lane.title}</h2><p class="sub">${lane.sub}</p>
-      <div class="where"><span id="${lane.id}-where"></span><span class="chip" id="${lane.id}-rule"></span></div></div>
-    <canvas id="${lane.id}-cloth" height="110" role="img"></canvas>
-    <div class="tally"><span class="cap">time spent breaking its green rule</span>
-      <span class="time display" id="${lane.id}-time">0:00</span>
-      <span class="lost"><b id="${lane.id}-lost">0</b>lost of <span id="${lane.id}-sent">0</span> requests</span></div>`;
+$('petals').innerHTML = Array.from({ length: 12 }, (_, i) => `<ellipse cx="30" cy="10" rx="5.2" ry="9.5" transform="rotate(${i * 30} 30 30)"/>`).join('');
+for (const b of BUILDS) {
+  $('build-' + b.id).innerHTML = `
+    <h2>${b.title}</h2><p class="what">${b.what}</p>
+    <div class="time" id="${b.id}-time">0:00</div><div class="cap">on dirty power<span class="real" id="${b.id}-real"></span></div>
+    <div class="ran"><div class="label">Where it ran</div>
+      <div class="bar" id="${b.id}-bar" role="img"></div>
+      <div class="flag" id="${b.id}-flag"></div></div>
+    <div class="facts"><span id="${b.id}-now"></span><span id="${b.id}-requests"></span></div>
+    <div class="check" id="${b.id}-check"></div>`;
 }
 
 // ---- reading the document at a playhead ---------------------------------------------------
 function machinesOf(doc) {
-  const names = Object.keys(doc.tl.ratios || {}).sort();
   const out = {};
-  names.forEach((name, i) => out[name] = { name, letter: String.fromCharCode(65 + i), color: THREADS[i % 4], text: THREAD_TEXT[i % 4],
+  Object.keys(doc.tl.ratios || {}).sort().forEach((name, i) => out[name] = { name, letter: String.fromCharCode(65 + i),
     zone: (doc.zones || {})[name] || '', index: (doc.tl.nodes || []).indexOf(name) });
   return out;
 }
 const stepAt = (pts, t) => { let v = null; for (const p of pts || []) { if (p[0] > t) break; v = p[1]; } return v; };
-function laneAt(doc, id, P) {
-  const reqs = doc.tl.requests[id] || [];
-  let sent = 0, lost = 0, last = -1;
-  for (const r of reqs) { if (r[0] > P) break; sent++; if (r[1] < 0) lost++; else last = r[1]; }
-  let breaking = 0, now = false;
-  for (const [from, to] of doc.tl.breaking[id] || []) {
-    if (from > P) break;
-    const end = to < 0 ? P : Math.min(to, P);
-    breaking += Math.max(0, end - from);
-    if (to < 0 || to > P) now = true;
-  }
-  return { reqs, sent, lost, node: last >= 0 ? doc.tl.nodes[last] : null, breaking, now };
-}
+const stepAtMark = (marks, t) => { let v = null; for (const m of marks || []) { if (m.t > t) break; v = m; } return v; };
 function receiptsAt(doc, P) {
   const t0 = Date.parse(doc.tl.start);
   return (doc.receipts || []).filter((r) => r.deployment === 'sunflower-greencharge')
@@ -207,216 +192,121 @@ function dataClock(doc) {
   return { first, stepMs, count, at, end: at(count - 1) + g.stepSeconds,
     timeAt: (t) => { let i = 0; for (const m of marks) { if (m.t > t) break; i = Math.round((Date.parse(m.data) - first) / stepMs); } return new Date(first + i * stepMs); } };
 }
-
-// ---- drawing ------------------------------------------------------------------------------
-function fit(canvas) {
-  // The height attribute in the markup is in CSS pixels. Setting canvas.height overwrites that
-  // attribute, so it is remembered once: on a high-density screen the two differ.
-  if (!canvas.dataset.h) canvas.dataset.h = canvas.getAttribute('height');
-  const dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = +canvas.dataset.h;
-  if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); canvas.style.height = h + 'px'; }
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
-  return { ctx, w, h };
-}
-const PAD = 8;
-let hatch = null;
-function hatchOf(ctx) {
-  if (hatch) return hatch;
-  const c = document.createElement('canvas'); c.width = c.height = 8;
-  const x = c.getContext('2d'); x.strokeStyle = 'rgba(179,67,42,.5)'; x.lineWidth = 1.4;
-  x.beginPath(); x.moveTo(-2, 10); x.lineTo(10, -2); x.moveTo(-2, 2); x.lineTo(2, -2); x.moveTo(6, 10); x.lineTo(10, 6); x.stroke();
-  return hatch = ctx.createPattern(c, 'repeat');
-}
-function playhead(ctx, x, top, bottom) {
-  ctx.save(); ctx.strokeStyle = 'rgba(42,32,23,.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([]);
-  ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke(); ctx.restore();
-}
-function flower(ctx, x, y, r) {
-  ctx.save(); ctx.translate(x, y); ctx.fillStyle = '#e6a100'; ctx.strokeStyle = INK; ctx.lineWidth = 0.9;
-  for (let i = 0; i < 9; i++) { ctx.rotate(Math.PI * 2 / 9); ctx.beginPath(); ctx.ellipse(0, -r * 0.62, r * 0.27, r * 0.45, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
-  ctx.fillStyle = '#5a3712'; ctx.beginPath(); ctx.arc(0, 0, r * 0.36, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
-}
-
-function drawChart(doc, V) {
-  const { ctx, w, h } = fit($('chart')), top = 8, bottom = h - 4, lo = 0.36, hi = 0.94;
-  const Y = (r) => top + (1 - (Math.min(hi, Math.max(lo, r)) - lo) / (hi - lo)) * (bottom - top);
-  const yRule = Y(V.min);
-  ctx.fillStyle = hatchOf(ctx); ctx.fillRect(PAD, yRule, w - 2 * PAD, bottom - yRule);
-  ctx.strokeStyle = HEM; ctx.lineWidth = 1; ctx.strokeRect(PAD + .5, top + .5, w - 2 * PAD - 1, bottom - top - 1);
-  ctx.strokeStyle = INK; ctx.lineWidth = 1.6; ctx.setLineDash([7, 5]);
-  ctx.beginPath(); ctx.moveTo(PAD, yRule); ctx.lineTo(w - PAD, yRule); ctx.stroke(); ctx.setLineDash([]);
-  const rule = `green rule ${pct(V.min)}`;  // a tag sitting on the line, at the end the lines start well above
-  ctx.font = `700 13.5px ${SANS}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; const rw = ctx.measureText(rule).width;
-  ctx.fillStyle = '#fbf6e8'; ctx.fillRect(PAD + 10, yRule - 10, rw + 12, 20);
-  ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.strokeRect(PAD + 10.5, yRule - 9.5, rw + 11, 19);
-  ctx.fillStyle = INK; ctx.fillText(rule, PAD + 16, yRule + 1);
-  const ends = [];
-  for (const m of Object.values(V.machines)) {
-    const pts = (doc.tl.ratios[m.name] || []).filter((p) => p[0] <= V.P);
-    if (!pts.length) continue;
-    ctx.strokeStyle = m.color; ctx.lineWidth = 4.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(V.X(Math.max(0, pts[0][0])), Y(pts[0][1]));
-    for (let i = 1; i < pts.length; i++) { ctx.lineTo(V.X(pts[i][0]), Y(pts[i - 1][1])); ctx.lineTo(V.X(pts[i][0]), Y(pts[i][1])); }
-    const lastR = pts[pts.length - 1][1]; ctx.lineTo(V.X(V.P), Y(lastR)); ctx.stroke();
-    ends.push({ m, y: Y(lastR), r: lastR });
+// Stretches of [from, to, value] from a list of [time, value] change points, up to the playhead.
+function stretches(pts, P, same = (a, b) => a === b) {
+  const out = [];
+  for (const p of (pts || []).filter((p) => p[0] <= P)) {
+    const from = out.length ? p[0] : 0, last = out[out.length - 1];
+    if (last && same(last[2], p[1])) continue;
+    if (last) last[1] = from;
+    out.push([from, P, p[1]]);
   }
-  playhead(ctx, V.X(V.P), top, bottom);
-  ends.sort((a, b) => a.y - b.y);
-  if (ends.length === 2 && ends[1].y - ends[0].y < 19) { const mid = (ends[0].y + ends[1].y) / 2; ends[0].y2 = mid - 9.5; ends[1].y2 = mid + 9.5; }
-  const room = V.X(V.P) < w - 74;  // the legend carries the numbers when the playhead reaches the edge
-  for (const e of ends) {
-    ctx.fillStyle = e.m.color; ctx.beginPath(); ctx.arc(V.X(V.P), e.y, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#fbf6e8'; ctx.lineWidth = 2; ctx.stroke();
-    if (!room) continue;
-    ctx.font = `600 17px ${SERIF}`; ctx.fillStyle = e.m.text; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-    ctx.fillText(`${e.m.letter} ${pct(e.r)}`, V.X(V.P) + 11, Math.min(bottom - 8, Math.max(top + 8, e.y2 != null ? e.y2 : e.y)));
-  }
+  return out;
 }
-
-function drawPick(doc, V) {
-  const { ctx, w, h } = fit($('pick')), top = 5, bottom = h - 5;
-  ctx.fillStyle = CLOTH; ctx.fillRect(PAD, top, w - 2 * PAD, bottom - top);
-  const pts = (doc.tl.choice || []).filter((p) => p[0] <= V.P);
-  pts.forEach((p, i) => {
-    const m = Object.values(V.machines).find((x) => x.index === p[1]); if (!m) return;
-    const x0 = V.X(Math.max(0, p[0])), x1 = V.X(i + 1 < pts.length ? pts[i + 1][0] : V.P);
-    ctx.fillStyle = m.color; ctx.fillRect(x0, top, Math.max(0, x1 - x0), bottom - top);
-    if (x1 - x0 > 96) { ctx.font = `700 13px ${SANS}`; ctx.fillStyle = '#fffaf0'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillText('Machine ' + m.letter, x0 + 8, (top + bottom) / 2 + .5); }
+// One copy of the app at the playhead: its counts, and the stretches it spent on each machine,
+// split wherever that machine's power changed between clean and dirty.
+function buildAt(doc, id, P, min, machines) {
+  const reqs = doc.tl.requests[id] || [], byIndex = {};
+  Object.values(machines).forEach((m) => byIndex[m.index] = m);
+  let sent = 0, lost = 0, last = -1; const lostAt = [], served = [];
+  for (const r of reqs) { if (r[0] > P) break; sent++; if (r[1] < 0) { lost++; lostAt.push(r[0]); } else { if (r[1] !== last) served.push([r[0], r[1]]); last = r[1]; } }
+  let dirty = 0; const spans = [];  // the witness's own count of time below the green rule
+  for (const [from, to] of doc.tl.breaking[id] || []) { if (from > P) break; const end = to < 0 ? P : Math.min(to, P); dirty += Math.max(0, end - from); spans.push([from, end]); }
+  const cuts = new Set([0]);
+  served.forEach((s) => cuts.add(s[0]));
+  Object.keys(machines).forEach((n) => (doc.tl.ratios[n] || []).forEach((p) => { if (p[0] <= P) cuts.add(p[0]); }));
+  const times = [...cuts].sort((a, b) => a - b), runs = [];
+  times.forEach((t, i) => {
+    const end = i + 1 < times.length ? times[i + 1] : P; if (end <= t) return;
+    const idx = stepAt(served, t + 1e-6) ?? (served[0] ? served[0][1] : null), m = byIndex[idx]; if (!m) return;
+    const clean = (stepAt(doc.tl.ratios[m.name], t + 1e-6) ?? stepAt(doc.tl.ratios[m.name], end) ?? 1) + 1e-9 >= min;
+    const prev = runs[runs.length - 1];
+    if (prev && prev.m === m && prev.clean === clean) prev.to = end; else runs.push({ from: t, to: end, m, clean });
   });
-  playhead(ctx, V.X(V.P), 0, h);
+  const cur = runs[runs.length - 1];
+  // A dirty stretch is labelled with the witness's figure for it, so the bar and the timer agree.
+  for (const r of runs) if (!r.clean) { const s = spans.find((s) => s[0] < r.to && s[1] > r.from); r.secs = Math.round(s ? s[1] - s[0] : r.to - r.from); }
+  return { sent, lost, lostAt, dirty, runs, machine: cur && cur.m, clean: cur ? cur.clean : true };
 }
 
-function drawCloth(doc, V, lane, L, marks) {
-  const canvas = $(lane.id + '-cloth'), { ctx, w, h } = fit(canvas);
-  const top = 25, rows = 4, rowH = 13, bottom = top + rows * rowH + 6, xP = V.X(V.P);
-  // the cloth: stitched so far, bare ahead
-  ctx.fillStyle = CLOTH; ctx.fillRect(PAD, top, w - 2 * PAD, bottom - top);
-  ctx.strokeStyle = HEM; ctx.lineWidth = 1; ctx.strokeRect(PAD + .5, top + .5, w - 2 * PAD - 1, bottom - top - 1);
-  // stretches spent below the green rule
-  let labelled = false;
-  for (const [from, to] of doc.tl.breaking[lane.id] || []) {
-    if (from > V.P) break;
-    const x0 = V.X(from), x1 = V.X(to < 0 ? V.P : Math.min(to, V.P));
-    ctx.fillStyle = 'rgba(179,67,42,.17)'; ctx.fillRect(x0, top, x1 - x0, bottom - top);
-    ctx.fillStyle = hatchOf(ctx); ctx.fillRect(x0, bottom, x1 - x0, 7);
-    ctx.fillStyle = RUST; ctx.fillRect(x0, bottom + 7, x1 - x0, 2);
-    if (!labelled && x1 - x0 > 30) { ctx.font = `italic 560 15px ${SERIF}`; ctx.fillStyle = RUST; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
-      ctx.fillText(x1 - x0 > 170 ? 'breaking its green rule' : 'breaking', x0 + 2, bottom + 11); labelled = true; }
-  }
-  // one stitch per real request, in the thread colour of the machine that answered
-  const perSecond = L.sent / Math.max(1, V.P), gap = (V.scale / Math.max(.5, perSecond)) * rows;
-  const sw = Math.max(1.5, Math.min(6, gap * 0.6)), sh = rowH - 4;
-  const colorOf = {}; Object.values(V.machines).forEach((m) => colorOf[m.index] = m.color);
-  const lost = [];
-  L.reqs.forEach((r, i) => {
-    if (r[0] > V.P) return;
-    if (r[1] < 0) { lost.push(r[0]); return; }
-    ctx.fillStyle = colorOf[r[1]] || '#9a8f7c';
-    const x = V.X(r[0]) - sw / 2, y = top + 5 + (i % rows) * rowH;
-    ctx.beginPath(); ctx.roundRect(x, y, sw, sh, Math.min(sw / 2, 2)); ctx.fill();
-  });
-  for (const t of lost) { // a dropped stitch
-    const x = V.X(t); ctx.fillStyle = '#fbf6e8'; ctx.fillRect(x - 5, top, 10, bottom - top);
-    ctx.strokeStyle = LOST; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath();
-    ctx.moveTo(x - 5, top + 5); ctx.lineTo(x + 5, bottom - 5); ctx.moveTo(x + 5, top + 5); ctx.lineTo(x - 5, bottom - 5); ctx.stroke();
-  }
-  // Sunflower's own notes, pinned where they happened
-  let lastRight = -1e9, lastKind = '';
-  for (const r of marks || []) {
-    const x = V.X(r.t); let text = '';
-    if (r.kind === 'Holding' && lastKind !== 'Holding') text = 'held';
-    if (r.kind === 'Watching' && lastKind !== 'Watching') text = 'waiting to be sure';
-    if (r.kind === 'Moved') text = `moved to ${r.to && V.machines[r.to] ? 'Machine ' + V.machines[r.to].letter : 'the new machine'}` + (r.seconds ? ` in ${r.seconds.toFixed(1)} s` : '');
-    if (r.kind === 'Aborted') text = 'move undone';
-    lastKind = r.kind; if (!text) continue;
-    ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x, top - 3); ctx.lineTo(x, top - 12); ctx.stroke();
-    const strong = r.kind === 'Moved' || r.kind === 'Aborted';
-    ctx.font = strong ? `600 16px ${SERIF}` : `italic 500 15px ${SERIF}`; ctx.fillStyle = r.kind === 'Aborted' ? RUST : INK; ctx.textBaseline = 'alphabetic';
-    const tw = ctx.measureText(text).width + (r.kind === 'Moved' ? 22 : 0);
-    let x0 = Math.max(PAD, Math.min(w - PAD - tw, x - 4)); const low = x0 < lastRight + 10;
-    const y = low ? top - 3 : top - 16; if (low) x0 = Math.max(x0, lastRight + 10);
-    if (x0 + tw > w - PAD) continue;
-    if (r.kind === 'Moved') { flower(ctx, x0 + 8, y - 6, 9); ctx.textAlign = 'left'; ctx.fillText(text, x0 + 21, y); }
-    else { ctx.textAlign = 'left'; ctx.fillText(text, x0, y); }
-    lastRight = x0 + tw;
-  }
-  playhead(ctx, xP, top - 2, bottom + 9);  // the caption below needs the rest of the canvas
-  canvas.setAttribute('aria-label', `${lane.title}: ${L.sent} requests, ${L.lost} lost, ${mmss(L.breaking)} breaking its green rule`);
+// ---- drawing: bars are plain positioned boxes, sized in percent of the day -----------------
+function seg(V, from, to, cls, label, minPx = 0) {
+  const left = V.pc(from), width = V.pc(to) - left;
+  const show = label && width / 100 * V.barPx >= minPx;
+  return `<div class="seg ${cls}" style="left:${left}%;width:${width}%">${show ? esc(label) : ''}</div>`;
 }
-
-function drawAxis(doc, V) {
-  const { ctx, w } = fit($('axis'));
-  ctx.font = `400 13.5px ${SANS}`; ctx.fillStyle = SOFT; ctx.strokeStyle = SOFT; ctx.lineWidth = 1; ctx.textBaseline = 'top';
-  const c = V.clock;
-  if (!c) { for (let s = 0; s <= V.domain; s += V.domain > 240 ? 60 : 30) { const x = V.X(s); ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 5); ctx.stroke(); ctx.textAlign = s ? 'center' : 'left'; ctx.fillText(mmss(s), x, 7); } return; }
-  const pxPerHour = V.scale * doc.grid.stepSeconds * 60 / doc.grid.stepMinutes;
-  const every = [1, 2, 3, 4, 6, 12].find((n) => n * pxPerHour >= 62) || 24;  // hours between labels
-  let lastDay = '', labelEnd = -1e9;
-  for (let i = 0; i < c.count; i++) {
-    const d = new Date(c.first + i * c.stepMs), x = V.X(c.at(i));
-    if (x > w - PAD + 1) break;
-    const major = d.getUTCMinutes() === 0 && d.getUTCHours() % every === 0;
-    ctx.globalAlpha = c.at(i) <= V.P ? 1 : .55;
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, major ? 6 : 3); ctx.stroke();
-    if (!major && i) continue;
-    const day = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-    const hm = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
-    const text = day !== lastDay ? `${day}, ${hm}` : hm, tw = ctx.measureText(text).width, left = i ? x - tw / 2 : x;
-    if (left < labelEnd + 14 || left + tw > w) continue;
-    ctx.textAlign = 'left'; ctx.fillText(text, left, 8); lastDay = day; labelEnd = left + tw;
-  }
-  ctx.globalAlpha = 1;
-}
-
 function render(doc, P) {
-  const machines = machinesOf(doc), clock = dataClock(doc);
+  const machines = machinesOf(doc), clock = dataClock(doc), min = doc.greenMin || 0.6;
   const domain = Math.max(30, P, clock ? clock.end : 0);
-  const chartW = $('chart').clientWidth, scale = (chartW - 2 * PAD) / domain;
-  const V = { P, machines, clock, domain, scale, min: doc.greenMin || 0.6, X: (t) => PAD + Math.max(0, t) * scale };
+  const V = { pc: (t) => Math.max(0, Math.min(100, t / domain * 100)), barPx: ($('hours').clientWidth || 800) };
 
-  $('legend').innerHTML = Object.values(machines).map((m) => { const r = stepAt(doc.tl.ratios[m.name], P), low = r != null && r + 1e-9 < V.min; return `
-    <li><span class="thread" style="background:${m.color}"></span>
-      <span><b>Machine ${m.letter}</b>${(doc.drills || {})[m.name] ? '<span class="drill">drill</span>' : ''}<small>${m.zone ? esc(m.zone) + ' grid' : esc(m.name)}</small></span>
-      <span class="pct display ${low ? 'low' : ''}">${pct(r)}<span class="sr-only"> green power</span></span></li>`; }).join('');
-  $('rulenote').innerHTML = `The policy asks for a machine where at least <b style="color:var(--ink)">${pct(V.min)}</b> of the power is green: wind, sun and water. In the hatched zone a machine is breaking that rule.`;
-  const pickIdx = stepAt(doc.tl.choice, P), picked = Object.values(machines).find((m) => m.index === pickIdx);
-  $('pickname').innerHTML = picked ? `now: <b style="color:${picked.text}">Machine ${picked.letter}</b>` : '';
-
-  drawChart(doc, V); drawPick(doc, V);
-  const notes = receiptsAt(doc, P), last = notes[notes.length - 1];
-  for (const lane of LANES) {
-    const L = laneAt(doc, lane.id, P), m = L.node && machines[L.node];
-    $(lane.id + '-where').innerHTML = m ? `on <b style="color:${m.text}">Machine ${m.letter}</b>` : 'starting…';
-    const chip = $(lane.id + '-rule'), mine = lane.id === 'sunflower' ? last : null;
-    if (mine && mine.kind === 'Moving') { chip.className = 'chip wait'; chip.textContent = 'moving…'; }
-    else if (L.now) { chip.className = 'chip bad'; chip.textContent = mine && mine.kind === 'Watching' ? 'below its rule, making sure it lasts' : 'breaking its green rule'; }
-    else { chip.className = 'chip ok'; chip.textContent = 'within its green rule'; }
-    $(lane.id + '-time').textContent = mmss(L.breaking);
-    $(lane.id + '-time').className = 'time display' + (L.now ? ' hot' : '');
-    $(lane.id + '-lost').textContent = L.lost; $(lane.id + '-lost').className = L.lost ? 'bad' : '';
-    $(lane.id + '-sent').textContent = L.sent.toLocaleString('en-GB');
-    drawCloth(doc, V, lane, L, lane.id === 'sunflower' ? notes : null);
+  // the day: each machine's power, then ENACT's pick
+  $('key-clean').textContent = `Clean: at least ${pct(min)} wind, sun and water`;
+  const rows = Object.values(machines).map((m) => {
+    const now = stepAt(doc.tl.ratios[m.name], P);
+    const bar = stretches(doc.tl.ratios[m.name], P, (a, b) => (a + 1e-9 >= min) === (b + 1e-9 >= min))
+      .map(([from, to, r]) => seg(V, from, to, r + 1e-9 >= min ? 'clean' : 'dirty', r + 1e-9 >= min ? '' : 'dirty', 60)).join('');
+    return `<div class="strip"><div class="who"><b>Machine ${m.letter}</b>${(doc.dips || {})[m.name] ? ' <span class="quiet">(dipped)</span>' : ''}<small>${m.zone ? esc(m.zone) + ' grid' : esc(m.name)}</small></div>
+      <div class="bar" role="img" aria-label="Machine ${m.letter}: clean and dirty stretches">${bar}</div>
+      <div class="now"><b>${pct(now)}</b> green</div></div>`;
+  });
+  const byIndex = {}; Object.values(machines).forEach((m) => byIndex[m.index] = m);
+  const picks = stretches(doc.tl.choice, P), picked = picks.length ? byIndex[picks[picks.length - 1][2]] : null;
+  rows.push(`<div class="strip"><div class="who"><b>ENACT’s pick</b><small>chosenNode in the RuntimePolicy</small></div>
+    <div class="bar" role="img" aria-label="The machine ENACT picks over the day">${picks.map(([from, to, i]) => byIndex[i] ? seg(V, from, to, 'pick', 'Machine ' + byIndex[i].letter, 84) : '').join('')}</div>
+    <div class="now">${picked ? `<b>Machine ${picked.letter}</b>` : ''}</div></div>`);
+  $('strips').innerHTML = rows.join('');
+  if (clock) {
+    const pxPerHour = V.barPx / domain * doc.grid.stepSeconds * 60 / doc.grid.stepMinutes;
+    const every = [1, 2, 3, 4, 6, 12].find((n) => n * pxPerHour >= 96) || 24; let html = '';
+    for (let i = 0; i < clock.count; i++) { const d = new Date(clock.first + i * clock.stepMs);
+      if (i && !(d.getUTCMinutes() === 0 && d.getUTCHours() % every === 0)) continue;
+      if (V.pc(clock.at(i)) > 97) break;
+      html += `<span style="left:${V.pc(clock.at(i))}%">${i ? hhmm(d) : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }) + ', ' + hhmm(d)}</span>`; }
+    $('hours').innerHTML = html;
   }
-  drawAxis(doc, V);
+
+  // the comparison
+  const notes = receiptsAt(doc, P), last = notes[notes.length - 1];
+  for (const b of BUILDS) {
+    const B = buildAt(doc, b.id, P, min, machines);
+    const W = { pc: V.pc, barPx: ($(b.id + '-bar').clientWidth || 500) };
+    $(b.id + '-time').textContent = mmss(B.dirty);
+    const realMin = doc.grid ? B.dirty / doc.grid.stepSeconds * doc.grid.stepMinutes : 0;  // what those seconds were in the day being replayed
+    $(b.id + '-real').textContent = realMin < 20 ? '' : `, about ${realMin >= 90 ? (Math.round(realMin / 30) / 2).toLocaleString('en-GB') + ' hours' : Math.round(realMin / 10) * 10 + ' minutes'} of the real day`;
+    const said = stepAtMark((doc.tl.advice || {})[b.id], P);
+    $(b.id + '-check').innerHTML = !said ? '' : said.action === 'no_action' ? 'Its own Application Controller check: <b>within policy</b>'
+      : said.action === 'relocate' ? 'Its own Application Controller check: <b>relocate</b>, this machine is below the policy’s green mix'
+      : `Its own Application Controller check: <b>${esc(said.action.replace('_', ' '))}</b>`;
+    $(b.id + '-bar').innerHTML = B.runs.map((r) => { const px = (W.pc(r.to) - W.pc(r.from)) / 100 * W.barPx, secs = r.secs;
+        return seg(W, r.from, r.to, r.clean ? 'clean' : 'dirty', r.clean ? 'Machine ' + r.m.letter : (px >= 96 ? `${secs} s dirty` : `${secs} s`), r.clean ? 92 : 48); }).join('')
+      + B.lostAt.map((t) => `<i class="lost" style="left:${V.pc(t)}%"></i>`).join('');
+    $(b.id + '-bar').setAttribute('aria-label', `${b.title}: ` + B.runs.map((r) => `Machine ${r.m.letter} on ${r.clean ? 'clean' : 'dirty'} power for ${Math.round(r.to - r.from)} seconds`).join(', '));
+    const moved = b.id === 'sunflower' ? notes.filter((r) => r.kind === 'Moved' || r.kind === 'Aborted') : [];
+    $(b.id + '-flag').innerHTML = moved.map((r) => { const m = r.to && machines[r.to];
+      const text = r.kind === 'Aborted' ? 'Move undone' : `Moved to ${m ? 'Machine ' + m.letter : 'the other machine'}${r.seconds ? ` in ${r.seconds.toFixed(1)} s` : ''}`;
+      return V.pc(r.t) < 62 ? `<span style="left:${V.pc(r.t)}%;transform:translateX(-9px)">${FLOWER}${text}</span>` : `<span style="right:${100 - V.pc(r.t)}%;transform:translateX(9px);flex-direction:row-reverse">${FLOWER}${text}</span>`; }).join('');
+    const moving = b.id === 'sunflower' && last && last.kind === 'Moving', waiting = b.id === 'sunflower' && last && last.kind === 'Watching';
+    $(b.id + '-now').innerHTML = !B.machine ? 'Starting up' : moving ? 'Moving to the machine ENACT picked'
+      : `<i class="dot" style="background:var(--${B.clean ? 'clean' : 'dirty'})"></i>Now on <b>Machine ${B.machine.letter}</b>, on ${B.clean ? 'clean' : 'dirty'} power${waiting ? '. Waiting to be sure it lasts' : ''}`;
+    $(b.id + '-requests').innerHTML = `${B.sent.toLocaleString('en-GB')} requests, <b class="${B.lost ? 'some' : ''}">${B.lost} lost</b>`;
+  }
 
   const plain = (msg) => { for (const m of Object.values(machines).sort((a, b) => b.name.length - a.name.length)) msg = msg.split(m.name).join('Machine ' + m.letter);
     return msg.replace(/[Tt]he policy operator/g, 'ENACT'); };
   // Steps on the way to something (waiting, moving) are worth a line only while they are the latest news.
   const passing = ['Placing', 'Watching', 'Moving'];
-  const shown = notes.filter((r, i) => !passing.includes(r.kind) || (i === notes.length - 1 && r.kind !== 'Placing')).slice(-3).reverse();
-  $('receipts').innerHTML = shown.length ? shown.map((r, i) => { const d = clock ? clock.timeAt(r.t) : null; return `
-    <li class="${i ? 'old' : ''}"><time>${d ? String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0') : mmss(r.t)}</time>
-      <span class="kind ${esc(r.kind)}">${esc(r.kind)}</span><span title="${esc(plain(r.message))}">${esc(plain(r.message))}</span></li>`; }).join('')
-    : '<li><time></time><span></span><span style="color:var(--soft)">Nothing yet. Sunflower is watching ENACT’s pick.</span></li>';
+  const news = notes.filter((r, i) => !passing.includes(r.kind) || (i === notes.length - 1 && r.kind !== 'Placing')).slice(-3).reverse();
+  $('latest').innerHTML = `<div class="head">What Sunflower did, and why</div>` + (news.length
+    ? news.map((r, i) => `<time class="${i ? 'earlier' : ''}">${clock ? hhmm(clock.timeAt(r.t)) : mmss(r.t)}</time><b class="${i ? 'earlier' : ''}">${esc(DID[r.kind] || r.kind)}</b><span class="${i ? 'earlier' : ''}" title="${esc(plain(r.message))}">${esc(plain(r.message))}</span>`).join('')
+    : `<time></time><b></b><span class="quiet">${doc.recorded ? 'Nothing yet in this recording.' : 'Nothing to report yet. Press “Play the day” and watch the panel on the right.'}</span>`);
 
   if (doc.grid) {
     const d = clock ? clock.timeAt(P) : new Date(doc.grid.dataTime);
-    $('when').textContent = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
-      + ' · ' + String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
-    $('note').textContent = `Real grid data from Great Britain. ${doc.grid.stepMinutes} minutes pass every ${doc.grid.stepSeconds} seconds.`;
-    $('foot').textContent = `Grid data: ${doc.grid.source} Licence: ${doc.grid.licence}. Every stitch is one real request to a real cluster; a request is lost if it did not succeed within 2 seconds.`;
-  } else { $('when').textContent = 'Live cluster'; $('note').textContent = 'No grid replay attached.'; }
+    $('when').textContent = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) + ', ' + hhmm(d);
+    $('note').textContent = `Real British grid data. ${doc.grid.stepMinutes} minutes pass every ${doc.grid.stepSeconds} seconds.`;
+    $('foot').textContent = `Grid data: ${doc.grid.source}, ${doc.grid.licence}. Requests are real: ${Math.round((buildAt(doc, 'standard', P, min, machines).sent || 0) / Math.max(1, P))} a second to each copy. One counts as lost after 2 seconds without an answer.`;
+  } else { $('when').textContent = 'Live cluster'; $('note').textContent = 'No grid replay is attached, so the clock is the wall clock.'; }
 }
 
 // ---- where the document comes from ----------------------------------------------------------
@@ -426,28 +316,36 @@ window.addEventListener('resize', redraw);
 
 async function live() {
   let state, tl, grid = null;
-  try { [state, tl] = await Promise.all([fetch('/api/state').then((r) => r.json()), fetch('/api/timeline').then((r) => r.json())]); } catch { return; }
+  try { [state, tl] = await Promise.all([fetch('/api/state').then((r) => r.json()), fetch('/api/timeline').then((r) => r.json())]); }
+  catch { $('when').textContent = 'Cannot reach the cluster'; $('note').textContent = 'Check that deploy/apps.sh has finished, then reload this page.'; return; }
   try { const r = await fetch('/grid/state'); if (r.ok) grid = await r.json(); } catch {}
-  const zones = {}, drills = {}; (grid ? grid.nodes : []).forEach((n) => { zones[n.node] = n.zone; drills[n.node] = n.drill; });
+  const zones = {}, dips = {}; (grid ? grid.nodes : []).forEach((n) => { zones[n.node] = n.zone; dips[n.node] = n.drill; });
   const pol = (state.cluster.policies || []).find((p) => p.greenMin != null);
-  const doc = { tl, receipts: state.cluster.receipts || [], greenMin: pol ? pol.greenMin : 0.6, zones, drills,
+  const doc = { tl, receipts: state.cluster.receipts || [], greenMin: pol ? pol.greenMin : 0.6, zones, dips,
     grid: grid && { source: grid.source, licence: grid.licence, stepMinutes: grid.stepMinutes, stepSeconds: grid.stepSeconds, length: grid.length, dataTime: grid.dataTime } };
   current = { doc, P: tl.seconds }; window.__doc = doc; window.__grid = grid;
-  if (grid) $('play').textContent = grid.playing ? 'Pause' : (grid.index >= grid.length - 1 ? 'Finished' : 'Play');
+  if (grid) {
+    const over = !grid.playing && grid.index >= grid.length - 1;
+    $('play').textContent = grid.playing ? 'Pause' : (over ? 'The day is over' : 'Play the day');
+    $('play').disabled = over;
+    const first = (tl.marks || [])[0], machines = machinesOf(doc), here = buildAt(doc, 'sunflower', tl.seconds, doc.greenMin, machines).machine;
+    $('rewind').textContent = first && grid.index > 0 ? `Rewind to ${hhmm(new Date(Date.parse(first.data)))}` : 'Rewind';
+    $('dip').textContent = here ? `Dip Machine ${here.letter}’s power for 5 seconds` : 'Dip the power for 5 seconds';
+  }
   redraw();
 }
 
 async function recording(file) {
-  const doc = await (await fetch(file)).json();
+  const doc = await (await fetch(file)).json(); doc.recorded = true;
   const clock = dataClock(doc), made = new Date(doc.tl.start);
   const end = clock ? Math.min(doc.tl.seconds, clock.end) : doc.tl.seconds;  // stop where the grid data stops
-  $('recorded').innerHTML = `<span class="recorded">Recording of a real run, ${made.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}. Not live.</span>`;
-  $('controls').innerHTML = '<button id="again" class="primary">Play again</button><button id="whole">Show the whole run</button>';
-  let began = performance.now(), whole = new URLSearchParams(location.search).has('end');
+  $('recorded').innerHTML = `<span class="recorded">Recording of a real run on ${made.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}. Not live.</span>`;
+  $('controls').innerHTML = '<button id="again" class="go">Play it again</button><button id="whole">Skip to the end</button>';
+  const still = new URLSearchParams(location.search).has('end');
+  let began = performance.now(), whole = still;
   $('again').onclick = () => { began = performance.now(); whole = false; };
   $('whole').onclick = () => { whole = true; };
-  const still = new URLSearchParams(location.search).has('end');
-  const frame = () => { const P = whole ? end : Math.min(end, (performance.now() - began) / 1000); current = { doc, P }; redraw(); if (!still) requestAnimationFrame(frame); };
+  const frame = () => { const P = whole ? end : Math.min(end, (performance.now() - began) / 1000); current = { doc, P }; redraw(); if (!still) setTimeout(frame, 200); };
   document.fonts.ready.then(frame);
 }
 
@@ -456,14 +354,14 @@ if (file) recording(file);
 else {
   $('play').onclick = async () => {
     const g = window.__grid; if (!g) return;
-    if (!g.playing && g.index === 0) await fetch('/api/reset', { method: 'POST' });  // the count starts when the scene does
+    if (!g.playing && g.index === 0) await fetch('/api/reset', { method: 'POST' });  // the count starts when the day does
     await fetch('/grid/' + (g.playing ? 'pause' : 'play'), { method: 'POST' }); live();
   };
-  $('reset').onclick = async () => { await fetch('/grid/reset', { method: 'POST' }); await fetch('/api/reset', { method: 'POST' }); live(); };
-  $('drill').onclick = async () => {
+  $('rewind').onclick = async () => { await fetch('/grid/reset', { method: 'POST' }); await fetch('/api/reset', { method: 'POST' }); live(); };
+  $('dip').onclick = async () => {
     const d = window.__doc; if (!d) return;
-    const node = laneAt(d, 'sunflower', d.tl.seconds).node; if (!node) return;
-    await fetch('/grid/drill', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ node, greenRatio: 0.3, seconds: 5 }) });
+    const here = buildAt(d, 'sunflower', d.tl.seconds, d.greenMin, machinesOf(d)).machine; if (!here) return;
+    await fetch('/grid/drill', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ node: here.name, greenRatio: 0.3, seconds: 5 }) });
     live();
   };
   document.fonts.ready.then(() => { live(); setInterval(live, 500); });

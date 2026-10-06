@@ -19,7 +19,7 @@ doc = {
     "receipts": state["cluster"].get("receipts") or [],
     "greenMin": policy.get("greenMin", 0.6),
     "zones": {n["node"]: n["zone"] for n in grid["nodes"]},
-    "drills": {},
+    "dips": {},
     "grid": {k: grid[k] for k in ("source", "licence", "stepMinutes", "stepSeconds", "length", "dataTime")},
     "totals": state["totals"],
     "failures": state["failures"],
