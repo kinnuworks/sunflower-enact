@@ -1,0 +1,48 @@
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: greencharge
+  tag: "1.0"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+containerPort: 8080
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - greencharge.local
+
+  paths:
+    - path: /
+      pathType: Prefix
+
+  tlsEnabled: false
+  tlsSecretName: ""
+  tls: []
+
+env:
+  {}
+
+
+resources:
+  {}
+
+
+probesEnabled: true

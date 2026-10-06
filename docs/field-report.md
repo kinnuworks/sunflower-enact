@@ -43,6 +43,16 @@ Details and evidence are in [platform-behaviour.md](platform-behaviour.md).
 | 19 | When no node qualifies under Hard green, the reason reports `green ratio 0.00` whatever the node's real ratio is. | Ran | None needed |
 | 20 | `metrics-server` never becomes ready on Kind as installed. | Ran | Not used |
 
+## ENACT SDK (Eclipse plug-in, v1.5.0)
+
+| # | What happens | Status | Fix we used |
+|---|---|---|---|
+| 21 | The Application Packaging wizard generates readiness and liveness probes on `GET /health` on the app port and does not ask for a path. GreenCharge has no such endpoint, so a pod deployed from the generated chart never becomes ready. The Application Controller wizard, in the same SDK, recommends different probes (`/actuator/health/...` on the management port). | Ran | Added a `/health` endpoint to GreenCharge |
+| 22 | On the packaging wizard's first page the two text boxes are drawn to the left of their labels ("Application name", "Namespace"), unlike every other page. | Ran | None needed |
+| 23 | The packaging wizard accepts `greencharge:1.0` in the Repository box with Tag left empty, which would render the image as `greencharge:1.0:latest`. It could split the value or flag it. | Ran | Entered repository and tag separately |
+| 24 | The Application Controller wizard appends `server.port` and `management.server.port` to `application.properties` even when both are already set there. | Ran | Left as written; values match |
+| 25 | The policy wizard validates the result against the CRD before writing and shows the YAML first. This worked well and is the step we would point new users to. | Ran | n/a |
+
 ## To be completed
 
-The SDK section is added once its steps have been run in Eclipse.
+The Dataspaces, AI Assistant and Application Deployment modules are added once they have been run.
