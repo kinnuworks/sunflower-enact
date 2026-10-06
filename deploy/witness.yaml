@@ -60,6 +60,7 @@ spec:
             - --rate=5
           env:
             - {name: WITNESS_RECEIPTS, value: "http://sunflower:8085/receipts"}
+            - {name: WITNESS_GRID, value: "http://gridbridge:8095"}
           ports: [{containerPort: 8090}]
           resources:
             requests: {cpu: 20m, memory: 32Mi}

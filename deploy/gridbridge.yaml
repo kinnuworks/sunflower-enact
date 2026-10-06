@@ -1,0 +1,47 @@
+# Gridbridge: replays real grid data into the carbon feed file and the nodes' green-ratio labels.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gridbridge
+  namespace: enact
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: gridbridge}
+  template:
+    metadata:
+      labels: {app: gridbridge}
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+        - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
+      containers:
+        - name: gridbridge
+          image: gridbridge:dev
+          imagePullPolicy: IfNotPresent
+          args:
+            # A real afternoon and evening: 29 September 2026 from 12:00 UTC.
+            # Worker = North East England, worker2 = North West England.
+            - --start=2026-09-29T12:00Z
+            - --periods=40
+            - --step=4s
+          ports: [{containerPort: 8095}]
+          volumeMounts:
+            - {name: grid, mountPath: /grid}
+          resources:
+            requests: {cpu: 10m, memory: 24Mi}
+            limits: {cpu: 100m, memory: 96Mi}
+      volumes:
+        - name: grid
+          hostPath: {path: /grid, type: Directory}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gridbridge
+  namespace: enact
+spec:
+  selector: {app: gridbridge}
+  ports: [{port: 8095, targetPort: 8095}]

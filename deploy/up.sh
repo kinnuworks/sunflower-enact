@@ -86,5 +86,13 @@ label() {
 label enact-dev-worker  '{"add":{"enact.eu/green-ratio":"0.85","enact.eu/role":"edge","enact.eu/region":"eu-west","enact.eu/zone":"eu-west-1a"}}'
 label enact-dev-worker2 '{"add":{"enact.eu/green-ratio":"0.9","enact.eu/role":"cloud","enact.eu/region":"eu-west","enact.eu/zone":"eu-west-2a"}}'
 
+if [ "${LEAN:-1}" = "1" ]; then
+  say "Pausing dashboards that are not needed between screenshots (LEAN=0 keeps them)"
+  # On a laptop the full stack leaves little headroom: an image load on top of it was enough
+  # to starve the API server and send the control plane into restart loops. `deploy/dashboards.sh on`
+  # brings these back when they are wanted.
+  "$HERE/dashboards.sh" off
+fi
+
 say "Cluster ready"
 k get nodes -L enact.eu/green-ratio,enact.eu/role,enact.eu/region

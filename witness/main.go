@@ -16,6 +16,8 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/signal"
 	"sort"
@@ -50,6 +52,12 @@ type Totals struct {
 	LastNode string         `json:"lastNode"`
 	P50Ms    float64        `json:"p50Ms"`
 	P95Ms    float64        `json:"p95Ms"`
+	// OutOfPolicySeconds is how long the node serving this target has been below the
+	// green-energy minimum its RuntimePolicy declares.
+	OutOfPolicySeconds float64  `json:"outOfPolicySeconds"`
+	Violating          bool     `json:"violating"`
+	GreenRatio         *float64 `json:"greenRatio,omitempty"`
+	GreenMin           *float64 `json:"greenMin,omitempty"`
 }
 
 type target struct {
@@ -128,6 +136,32 @@ func (h *hub) snapshot() (totals []Totals, recent []Sample) {
 	}
 	recent = append(recent, h.recent...)
 	return
+}
+
+// account adds dt seconds of out-of-policy time to a target when its serving node is below
+// the policy's green minimum. Called once per cluster poll.
+func (h *hub) account(name string, ratio, min *float64, dt float64) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	t := h.totals[name]
+	if t == nil {
+		return
+	}
+	t.GreenRatio, t.GreenMin = ratio, min
+	t.Violating = ratio != nil && min != nil && *ratio+1e-9 < *min
+	if t.Violating {
+		t.OutOfPolicySeconds += dt
+	}
+}
+
+// servingNode is the node that answered the target's most recent successful request.
+func (h *hub) servingNode(name string) string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if t := h.totals[name]; t != nil {
+		return t.LastNode
+	}
+	return ""
 }
 
 func (h *hub) reset() {
@@ -277,6 +311,23 @@ func main() {
 	}
 
 	cluster := newClusterWatcher()
+	cluster.onPoll = func(st ClusterState, dt float64) {
+		for _, t := range targets {
+			node := h.servingNode(t.name)
+			var ratio, min *float64
+			for _, n := range st.Nodes {
+				if n.Name == node {
+					ratio = n.GreenRatio
+				}
+			}
+			for _, p := range st.Policies {
+				if p.Name == "greencharge-"+t.name {
+					min = p.GreenMin
+				}
+			}
+			h.account(t.name, ratio, min, dt)
+		}
+	}
 	go cluster.run(ctx)
 
 	for _, t := range targets {
@@ -312,6 +363,12 @@ func main() {
 			}
 		}
 	})
+	if grid := os.Getenv("WITNESS_GRID"); grid != "" {
+		// The screen's replay controls live on the same origin as the screen itself.
+		if u, err := url.Parse(grid); err == nil {
+			mux.Handle("/grid/", http.StripPrefix("/grid", httputil.NewSingleHostReverseProxy(u)))
+		}
+	}
 	web, _ := fs.Sub(webFS, "web")
 	mux.Handle("/", http.FileServer(http.FS(web)))
 

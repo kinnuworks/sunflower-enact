@@ -1,1 +1,240 @@
-<!doctype html><title>witness</title><p>race screen placeholder</p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunflower race</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --panel: #ffffff; --ink: #1b1f1d; --muted: #5d6763; --line: #dfe3df;
+    --a: #3b5bdb; --b: #e8590c; --fail: #e03131; --ok: #2b8a3e; --bad: #c92a2a; --badbg: #fff0f0; --okbg: #ebf7ee;
+    --accent: #f2b705;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 17px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 18px 22px 28px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  h1 { font-size: 30px; margin: 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+  h1 svg { width: 34px; height: 34px; }
+  .tag { color: var(--muted); font-size: 16px; margin: 2px 0 0; }
+  .clock { text-align: right; }
+  .clock b { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .clock small { display: block; color: var(--muted); font-size: 14px; }
+  .controls { display: flex; gap: 8px; margin-top: 6px; justify-content: flex-end; flex-wrap: wrap; }
+  button { font: inherit; font-size: 15px; padding: 7px 14px; border-radius: 8px; border: 1px solid #b9c0bb;
+    background: var(--panel); color: var(--ink); cursor: pointer; }
+  button:hover { background: #eef0ed; }
+  button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; margin-top: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .label { font-size: 13px; text-transform: none; color: var(--muted); margin: 0 0 4px; }
+
+  .machine { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+  .dot { width: 18px; height: 18px; border-radius: 50%; }
+  .machine h3 { margin: 0; font-size: 19px; }
+  .machine .zone { color: var(--muted); font-size: 15px; }
+  .pct { font-size: 40px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1; }
+  .pct.low { color: var(--bad); }
+  .bar { grid-column: 1 / -1; height: 12px; background: #ecefec; border-radius: 6px; position: relative; overflow: visible; margin-bottom: 20px; }
+  .bar i { display: block; height: 100%; border-radius: 6px; background: var(--ok); transition: width .6s ease, background .3s; }
+  .bar i.low { background: var(--bad); }
+  .bar u { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); }
+  .bar em { position: absolute; top: 18px; transform: translateX(-50%); font-size: 12px; font-style: normal; color: var(--muted); white-space: nowrap; }
+  .drilltag { font-size: 12px; background: var(--accent); color: #3a2c00; padding: 1px 7px; border-radius: 10px; margin-left: 6px; }
+
+  .lane h2 { margin: 0; font-size: 22px; }
+  .lane .sub { color: var(--muted); font-size: 15px; margin: 0 0 10px; }
+  .where { display: flex; align-items: center; gap: 10px; font-size: 19px; margin: 8px 0; flex-wrap: wrap; }
+  .pill { font-size: 16px; padding: 4px 12px; border-radius: 999px; font-weight: 600; }
+  .pill.ok { background: var(--okbg); color: var(--ok); }
+  .pill.bad { background: var(--badbg); color: var(--bad); }
+  .pill.wait { background: #fff6da; color: #7a5b00; }
+  canvas { width: 100%; height: 74px; display: block; background: #fafaf8; border: 1px solid var(--line); border-radius: 10px; }
+  .striplabel { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .num { background: #f4f5f2; border-radius: 10px; padding: 9px 12px; }
+  .num span { display: block; font-size: 13px; color: var(--muted); }
+  .num b { font-size: 26px; font-variant-numeric: tabular-nums; }
+  .num b.bad { color: var(--bad); }
+
+  .log { margin-top: 14px; }
+  .log ol { list-style: none; margin: 6px 0 0; padding: 0; }
+  .log li { display: grid; grid-template-columns: 78px 96px 1fr; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 16px; }
+  .log li:first-child { border-top: 0; }
+  .log time { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .log .kind { font-weight: 600; }
+  .kind.Moved, .kind.Placed { color: var(--ok); }
+  .kind.Aborted { color: var(--bad); }
+  .legend { display: flex; gap: 16px; font-size: 14px; color: var(--muted); align-items: center; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  footer { margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>
+        <svg viewBox="0 0 40 40" aria-hidden="true"><g fill="#f2b705"><ellipse cx="20" cy="7" rx="4" ry="7"/><ellipse cx="20" cy="33" rx="4" ry="7"/><ellipse cx="7" cy="20" rx="7" ry="4"/><ellipse cx="33" cy="20" rx="7" ry="4"/><ellipse cx="10.8" cy="10.8" rx="4" ry="7" transform="rotate(-45 10.8 10.8)"/><ellipse cx="29.2" cy="29.2" rx="4" ry="7" transform="rotate(-45 29.2 29.2)"/><ellipse cx="29.2" cy="10.8" rx="4" ry="7" transform="rotate(45 29.2 10.8)"/><ellipse cx="10.8" cy="29.2" rx="4" ry="7" transform="rotate(45 10.8 29.2)"/></g><circle cx="20" cy="20" r="7.5" fill="#5c3d0a"/></svg>
+        Sunflower
+      </h1>
+      <p class="tag">GreenCharge tells drivers where the clean power is. Sunflower makes GreenCharge go there itself.</p>
+    </div>
+    <div class="clock">
+      <b id="dataTime">connecting…</b>
+      <small id="dataNote"></small>
+      <div class="controls">
+        <button id="play" class="primary">Play</button>
+        <button id="reset">Restart</button>
+        <button id="drill" title="Temporarily lowers the green share of the machine Sunflower's copy is on">Drill: 10-second dip</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="grid2" id="machines" aria-label="Machines and their green energy share"></section>
+
+  <section class="grid2" aria-label="The two copies of GreenCharge">
+    <div class="card lane" id="lane-standard"></div>
+    <div class="card lane" id="lane-sunflower"></div>
+  </section>
+
+  <section class="card log" aria-label="What Sunflower did and why">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <h2 style="margin:0;font-size:20px">What Sunflower did, and why</h2>
+      <div class="legend" id="legend"></div>
+    </div>
+    <ol id="receipts"><li><time></time><span></span><span style="color:var(--muted)">Nothing yet.</span></li></ol>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const LANES = [
+  { id: 'standard',  title: 'Standard build', sub: 'What the challenge checklist produces: placed once, at deploy time.' },
+  { id: 'sunflower', title: 'With Sunflower', sub: 'Same app, same traffic, same grid. Follows ENACT’s choice of machine.' },
+];
+const COLORS = ['#3b5bdb', '#e8590c', '#0c8599', '#9c36b5'];
+const FAIL = '#e03131';
+let machines = {};      // node name -> { letter, color, zone, ratio }
+let greenMin = 0.6;
+
+const $ = (id) => document.getElementById(id);
+const pct = (r) => r == null ? '–' : Math.round(r * 100) + '%';
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function mmss(sec) { sec = Math.round(sec); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+function nameOf(node) { const m = machines[node]; return m ? 'Machine ' + m.letter : (node || '–'); }
+function plain(msg) { // replace node names with the names used on screen
+  for (const [node, m] of Object.entries(machines).sort((a, b) => b[0].length - a[0].length)) msg = msg.split(node).join('Machine ' + m.letter);
+  return msg.replace(/The policy operator/g, 'ENACT').replace(/the policy operator/g, 'ENACT');
+}
+
+for (const lane of LANES) {
+  $('lane-' + lane.id).innerHTML = `
+    <h2>${lane.title}</h2><p class="sub">${lane.sub}</p>
+    <div class="where"><span id="${lane.id}-where">–</span><span class="pill" id="${lane.id}-rule"></span></div>
+    <div class="striplabel"><span>Every dot is one real request, coloured by the machine that answered</span><span>newest →</span></div>
+    <canvas id="${lane.id}-strip" width="1200" height="148" role="img" aria-label="Recent requests to the ${lane.title}"></canvas>
+    <div class="nums">
+      <div class="num"><span>Time breaking the green rule</span><b id="${lane.id}-viol">0:00</b></div>
+      <div class="num"><span>Requests failed</span><b id="${lane.id}-failed">0</b></div>
+      <div class="num"><span>Requests served</span><b id="${lane.id}-req">0</b></div>
+    </div>`;
+}
+
+function drawStrip(canvas, samples) {
+  const ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const cols = 60, rows = 4, r = 8, gx = W / cols, gy = H / rows;
+  const shown = samples.slice(-cols * rows);
+  const offset = cols * rows - shown.length;
+  shown.forEach((s, i) => {
+    const k = i + offset, col = Math.floor(k / rows), row = k % rows;
+    ctx.beginPath();
+    ctx.arc(col * gx + gx / 2, row * gy + gy / 2, r, 0, Math.PI * 2);
+    ctx.fillStyle = s.ok ? (machines[s.node] ? machines[s.node].color : '#adb5bd') : FAIL;
+    ctx.fill();
+  });
+}
+
+async function tick() {
+  let state, grid = null;
+  try { state = await (await fetch('/api/state')).json(); } catch { return; }
+  try { const r = await fetch('/grid/state'); if (r.ok) grid = await r.json(); } catch {}
+
+  const nodes = (state.cluster.nodes || []).filter((n) => n.greenRatio != null).sort((a, b) => a.name.localeCompare(b.name));
+  const zoneOf = {}; (grid ? grid.nodes : []).forEach((g) => zoneOf[g.node] = g);
+  machines = {};
+  nodes.forEach((n, i) => machines[n.name] = { letter: String.fromCharCode(65 + i), color: COLORS[i % COLORS.length],
+    ratio: n.greenRatio, zone: zoneOf[n.name] ? zoneOf[n.name].zone : '', drill: zoneOf[n.name] && zoneOf[n.name].drill });
+  const pol = (state.cluster.policies || []).find((p) => p.greenMin != null);
+  if (pol) greenMin = pol.greenMin;
+
+  $('machines').innerHTML = nodes.map((n) => { const m = machines[n.name], low = m.ratio + 1e-9 < greenMin; return `
+    <div class="card machine">
+      <span class="dot" style="background:${m.color}"></span>
+      <div><h3>Machine ${m.letter}${m.drill ? '<span class="drilltag">drill</span>' : ''}</h3>
+        <div class="zone">${m.zone ? 'Powered by the ' + esc(m.zone) + ' grid' : esc(n.name)}</div></div>
+      <div class="pct ${low ? 'low' : ''}">${pct(m.ratio)}<span class="sr-only"> green energy</span></div>
+      <div class="bar"><i class="${low ? 'low' : ''}" style="width:${Math.round(m.ratio * 100)}%"></i>
+        <u style="left:${greenMin * 100}%"></u><em style="left:${greenMin * 100}%">green rule: ${pct(greenMin)} or more</em></div>
+    </div>`; }).join('');
+
+  $('legend').innerHTML = nodes.map((n) => `<span><i style="background:${machines[n.name].color}"></i>answered by Machine ${machines[n.name].letter}</span>`).join('')
+    + `<span><i style="background:${FAIL}"></i>failed</span>`;
+
+  const byTarget = {}; (state.recent || []).forEach((s) => (byTarget[s.target] = byTarget[s.target] || []).push(s));
+  for (const lane of LANES) {
+    const t = (state.totals || []).find((x) => x.target === lane.id) || {};
+    const dep = (state.cluster.deployments || []).find((d) => d.name === lane.id + '-greencharge') || {};
+    const node = t.lastNode || dep.pinnedNode;
+    $(lane.id + '-where').innerHTML = node ? `Running on <b style="color:${machines[node] ? machines[node].color : 'inherit'}">${nameOf(node)}</b>` : 'Starting…';
+    const rule = $(lane.id + '-rule');
+    const moving = dep.annotations && dep.annotations.status === 'Moving', waiting = dep.annotations && dep.annotations.status === 'Wait';
+    if (moving) { rule.className = 'pill wait'; rule.textContent = 'Moving…'; }
+    else if (t.violating) { rule.className = 'pill bad'; rule.textContent = waiting ? 'Below the green rule, checking it lasts' : 'Breaking its green rule'; }
+    else { rule.className = 'pill ok'; rule.textContent = 'Within its green rule'; }
+    $(lane.id + '-viol').textContent = mmss(t.outOfPolicySeconds || 0);
+    $(lane.id + '-viol').className = (t.outOfPolicySeconds || 0) >= 1 ? 'bad' : '';
+    $(lane.id + '-failed').textContent = t.failed || 0;
+    $(lane.id + '-failed').className = t.failed ? 'bad' : '';
+    $(lane.id + '-req').textContent = (t.requests || 0).toLocaleString();
+    drawStrip($(lane.id + '-strip'), byTarget[lane.id] || []);
+  }
+
+  const receipts = (state.cluster.receipts || []).filter((r) => r.kind !== 'Placing').slice(-6).reverse();
+  if (receipts.length) $('receipts').innerHTML = receipts.map((r) => `
+    <li><time>${new Date(r.time).toLocaleTimeString([], { hour12: false })}</time>
+      <span class="kind ${esc(r.kind)}">${esc(r.kind)}</span><span>${esc(plain(r.message))}</span></li>`).join('');
+
+  if (grid) {
+    const d = new Date(grid.dataTime);
+    $('dataTime').textContent = d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
+    $('dataNote').textContent = `Real grid data, replayed: ${grid.stepMinutes} minutes pass every ${grid.stepSeconds} seconds` + (grid.drill ? ' · drill in progress' : '');
+    $('play').textContent = grid.playing ? 'Pause' : (grid.index >= grid.length - 1 ? 'Finished' : 'Play');
+    $('foot').textContent = `Grid data: ${grid.source} Licence: ${grid.licence}. Green share = wind + solar + hydro. `
+      + 'A request counts as failed if it did not return success within 2 seconds.';
+  } else {
+    $('dataTime').textContent = 'Live cluster';
+    $('dataNote').textContent = 'Grid replay not connected';
+  }
+  window.__grid = grid; window.__state = state;
+}
+
+$('play').onclick = async () => { const g = window.__grid; if (g) await fetch('/grid/' + (g.playing ? 'pause' : 'play'), { method: 'POST' }); tick(); };
+$('reset').onclick = async () => { await fetch('/grid/reset', { method: 'POST' }); await fetch('/api/reset', { method: 'POST' }); tick(); };
+$('drill').onclick = async () => {
+  const s = window.__state; if (!s) return;
+  const t = (s.totals || []).find((x) => x.target === 'sunflower'); if (!t || !t.lastNode) return;
+  await fetch('/grid/drill', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ node: t.lastNode, greenRatio: 0.3, seconds: 10 }) });
+  tick();
+};
+tick(); setInterval(tick, 500);
+</script>
+</body>
+</html>

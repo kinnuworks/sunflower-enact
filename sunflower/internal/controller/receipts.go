@@ -34,13 +34,21 @@ type Receipts struct {
 
 func NewReceipts(max int) *Receipts { return &Receipts{max: max} }
 
-func (r *Receipts) add(rc Receipt) {
+// add records a receipt and reports whether it was new.
+func (r *Receipts) add(rc Receipt) bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	// A reconcile that runs again before its own write is visible would repeat itself.
+	for i := len(r.list) - 1; i >= 0 && rc.Time.Sub(r.list[i].Time) < 5*time.Second; i-- {
+		if p := r.list[i]; p.Deployment == rc.Deployment && p.Namespace == rc.Namespace && p.Kind == rc.Kind && p.Message == rc.Message {
+			return false
+		}
+	}
 	r.list = append(r.list, rc)
 	if len(r.list) > r.max {
 		r.list = r.list[len(r.list)-r.max:]
 	}
+	return true
 }
 
 func (r *Receipts) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
@@ -56,8 +64,8 @@ func (r *Reconciler) note(dep *appsv1.Deployment, eventType, kind string, rc Rec
 	rc.Time = r.now().UTC()
 	rc.Namespace, rc.Deployment, rc.Kind = dep.Namespace, dep.Name, kind
 	rc.Message = fmt.Sprintf(format, args...)
-	if r.Receipts != nil {
-		r.Receipts.add(rc)
+	if r.Receipts != nil && !r.Receipts.add(rc) {
+		return
 	}
 	r.Recorder.Event(dep, eventType, kind, rc.Message)
 }

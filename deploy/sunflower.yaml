@@ -62,7 +62,10 @@ spec:
         - name: sunflower
           image: sunflower:dev
           imagePullPolicy: IfNotPresent
-          args: ["--settle=20s", "--dwell=60s", "--margin=0.10"]
+          # Tuned to the replay speed in deploy/gridbridge.yaml (4 s per half-hour of data): a
+          # reason to move must last one hour of grid time, and the app stays put for at least
+          # four hours of grid time after a move.
+          args: ["--settle=8s", "--dwell=30s", "--margin=0.10"]
           resources:
             requests: {cpu: 20m, memory: 32Mi}
             limits: {cpu: 200m, memory: 128Mi}

@@ -98,9 +98,10 @@ spec:
             periodSeconds: 10
           lifecycle:
             preStop:
-              # Keep serving while the Service stops sending new requests here.
-              exec:
-                command: ["sleep", "5"]
+              # Ask the app to hand its clients over before it is stopped; see PlacementInfo.drain.
+              httpGet:
+                path: /internal/drain?seconds=6
+                port: http
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

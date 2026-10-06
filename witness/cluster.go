@@ -71,6 +71,8 @@ type clusterWatcher struct {
 	client    *http.Client
 	namespace string
 	receipts  string // URL of Sunflower's /receipts, optional
+	// onPoll, when set, is called after each successful poll with the seconds since the last one.
+	onPoll func(ClusterState, float64)
 
 	mu    sync.Mutex
 	state ClusterState
@@ -114,10 +116,15 @@ func (w *clusterWatcher) run(ctx context.Context) {
 	}
 	tick := time.NewTicker(time.Second)
 	defer tick.Stop()
+	last := time.Now()
 	for {
 		st, err := w.poll(ctx)
 		if err != nil {
 			st = ClusterState{Error: err.Error()}
+		} else if w.onPoll != nil {
+			now := time.Now()
+			w.onPoll(st, now.Sub(last).Seconds())
+			last = now
 		}
 		w.mu.Lock()
 		w.state = st

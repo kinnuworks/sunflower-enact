@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn -q clean package -DskipTests
 
 # Run
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/greencharge.jar app.jar
 EXPOSE 8080
