@@ -1,0 +1,68 @@
+# Sunflower: carries out the node choice of an ENACT RuntimePolicy on Deployments that opt in.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sunflower
+  namespace: enact
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sunflower
+rules:
+  # Re-pin Deployments. This is the one thing the policy operator has no rights to do.
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "patch"]
+  # Read the operator's decision and the nodes it is about. Never written.
+  - apiGroups: ["enact.eu"]
+    resources: ["runtimepolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  # One plain-language event per action.
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sunflower
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sunflower
+subjects:
+  - kind: ServiceAccount
+    name: sunflower
+    namespace: enact
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sunflower
+  namespace: enact
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: sunflower}
+  template:
+    metadata:
+      labels: {app: sunflower}
+    spec:
+      serviceAccountName: sunflower
+      # Runs on the control plane so that losing a worker never takes the controller with it.
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+        - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
+      containers:
+        - name: sunflower
+          image: sunflower:dev
+          imagePullPolicy: IfNotPresent
+          args: ["--settle=20s", "--dwell=60s", "--margin=0.10"]
+          resources:
+            requests: {cpu: 20m, memory: 32Mi}
+            limits: {cpu: 200m, memory: 128Mi}

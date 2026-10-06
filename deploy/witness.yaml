@@ -1,0 +1,74 @@
+# Witness: traffic, per-request log and the race screen. Read-only on the cluster.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: witness
+  namespace: enact
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: witness
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "events"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list"]
+  - apiGroups: ["enact.eu"]
+    resources: ["runtimepolicies"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: witness
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: witness
+subjects:
+  - kind: ServiceAccount
+    name: witness
+    namespace: enact
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: witness
+  namespace: enact
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: witness}
+  template:
+    metadata:
+      labels: {app: witness}
+    spec:
+      serviceAccountName: witness
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+        - {key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}
+      containers:
+        - name: witness
+          image: witness:dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - --targets=standard=http://standard-greencharge:8080,sunflower=http://sunflower-greencharge:8080
+            - --rate=5
+          ports: [{containerPort: 8090}]
+          resources:
+            requests: {cpu: 20m, memory: 32Mi}
+            limits: {cpu: 300m, memory: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: witness
+  namespace: enact
+spec:
+  type: NodePort
+  selector: {app: witness}
+  ports: [{port: 8090, targetPort: 8090, nodePort: 32590}]

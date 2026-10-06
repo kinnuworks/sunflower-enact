@@ -1,0 +1,52 @@
+# The placement policy from the brief: Soft green energy of at least 60%, Hard region
+# eu-west, availability 0.9. Workers only (the control plane carries no ENACT labels).
+# One policy per copy of the app, so each copy has its own decision to follow or ignore.
+apiVersion: enact.eu/v1alpha1
+kind: RuntimePolicy
+metadata:
+  name: greencharge-standard
+  namespace: enact
+spec:
+  appNamespace: enact
+  appLabels:
+    app.kubernetes.io/instance: standard
+  availability:
+    requireReady: true
+    nodeAvailability: 0.9
+  location:
+    mode: Hard
+    regions: ["eu-west"]
+  greenEnergy:
+    minRatio: 0.6
+    mode: Soft
+  cpu:
+    min: 1
+    max: 4
+  memory:
+    min: 2048
+    max: 2048
+---
+apiVersion: enact.eu/v1alpha1
+kind: RuntimePolicy
+metadata:
+  name: greencharge-sunflower
+  namespace: enact
+spec:
+  appNamespace: enact
+  appLabels:
+    app.kubernetes.io/instance: sunflower
+  availability:
+    requireReady: true
+    nodeAvailability: 0.9
+  location:
+    mode: Hard
+    regions: ["eu-west"]
+  greenEnergy:
+    minRatio: 0.6
+    mode: Soft
+  cpu:
+    min: 1
+    max: 4
+  memory:
+    min: 2048
+    max: 2048

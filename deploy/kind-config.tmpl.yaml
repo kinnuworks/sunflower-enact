@@ -1,0 +1,25 @@
+# Same 3-node shape as the challenge's cluster-config/kind-config.yaml, plus:
+#  - host ports for the second GreenCharge copy and the witness screen
+#  - a shared folder (__GRID_DIR__ on the laptop, /grid on every node) holding the carbon
+#    feed file, so the file the dataspace transfer saved is the file the pods read
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+name: enact-dev
+nodes:
+- role: control-plane
+  extraPortMappings:
+    - {containerPort: 32554, hostPort: 35554, listenAddress: "0.0.0.0", protocol: TCP}  # TDCME monitor API
+    - {containerPort: 32580, hostPort: 35580, listenAddress: "0.0.0.0", protocol: TCP}  # policy operator API
+    - {containerPort: 32585, hostPort: 35555, listenAddress: "0.0.0.0", protocol: TCP}  # GreenCharge, standard build
+    - {containerPort: 32586, hostPort: 35556, listenAddress: "0.0.0.0", protocol: TCP}  # GreenCharge, with Sunflower
+    - {containerPort: 32590, hostPort: 35590, listenAddress: "0.0.0.0", protocol: TCP}  # witness screen
+  extraMounts:
+    - {hostPath: __GRID_DIR__, containerPath: /grid}
+- role: worker
+  extraMounts:
+    - {hostPath: __GRID_DIR__, containerPath: /grid}
+- role: worker
+  extraMounts:
+    - {hostPath: __GRID_DIR__, containerPath: /grid}
+networking:
+  disableDefaultCNI: true

@@ -4,16 +4,26 @@
 replicaCount: 1
 
 image:
-  # replace ghcr.io/thanasislt/enact-veleshack-2026/greencharge:latest with your ghcr.io image
-  repository: ghcr.io/thanasislt/enact-veleshack-2026/greencharge
-  pullPolicy: Always
+  # Built locally (`docker build -t greencharge:1.0 greencharge`) and loaded into Kind,
+  # so no registry or pull secret is involved.
+  repository: greencharge
+  pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "sha-e7b1463"
+  tag: "1.0"
 
-# create your secret with the following command:
-# kubectl create secret ghcr --docker-server=<ghcr.io/XXXX> --docker-username=<USERNAME> --docker-password=<GITHUB_TOKEN> --docker-email=<EMAIL>
-imagePullSecrets: 
-  - name: ghcr
+imagePullSecrets: []
+
+# Sunflower follows the node chosen by this RuntimePolicy. When enabled, the chart stops
+# setting the replica count and node pin, which the controller then owns.
+sunflower:
+  enabled: false
+  policy: ""
+
+# The carbon feed file delivered by the dataspace transfer. `hostPath` is a folder present
+# on every node (see deploy/kind-config.tmpl.yaml); leave it empty to run on the built-in mock.
+carbonFeed:
+  hostPath: ""
+  file: carbon.json
 nameOverride: ""
 fullnameOverride: ""
 
@@ -35,7 +45,8 @@ service:
   nodePort: 32585
 
 ingress:
-  enabled: true
+  # The cluster has no ingress controller; the Service's NodePort is how the app is reached.
+  enabled: false
   className: ""
   annotations: {}
   hosts:
@@ -47,7 +58,7 @@ ingress:
 
 resources:
   limits:
-    cpu: 500m
+    cpu: "1"
     memory: 512Mi
   requests:
     cpu: 100m

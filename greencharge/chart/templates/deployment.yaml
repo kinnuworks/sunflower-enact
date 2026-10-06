@@ -4,8 +4,23 @@ metadata:
   name: {{ include "greencharge.fullname" . }}
   labels:
     {{- include "greencharge.labels" . | nindent 4 }}
+  {{- if .Values.sunflower.enabled }}
+  annotations:
+    # Opt in to Sunflower: follow the node this RuntimePolicy chooses.
+    sunflower.enact.eu/policy: {{ required "sunflower.policy is required when sunflower.enabled" .Values.sunflower.policy | quote }}
+  {{- end }}
 spec:
+  {{- if not .Values.sunflower.enabled }}
+  # With Sunflower on, the replica count and node pin belong to the controller, so the
+  # chart leaves them out and a later `helm upgrade` cannot undo a move.
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Start the new pod before stopping the old one, so a move never leaves zero copies.
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       {{- include "greencharge.selectorLabels" . | nindent 6 }}
@@ -25,15 +40,14 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.serviceAccount.create }}
-      serviceAccountName: {{ include "greencharge.fullname" . }}
-      {{- else if .Values.serviceAccount.name }}
+      {{- if .Values.serviceAccount.name }}
       serviceAccountName: {{ .Values.serviceAccount.name }}
       {{- end }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      terminationGracePeriodSeconds: 40
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -46,41 +60,79 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          {{- with .Values.env }}
+            - name: management
+              containerPort: 8081
+              protocol: TCP
           env:
+            # Lets the app report which node and pod answered each request.
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- if .Values.carbonFeed.hostPath }}
+            - name: CARBON_FEED_FILE
+              value: /grid/{{ .Values.carbonFeed.file }}
+            {{- end }}
+            {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}
-          livenessProbe:
+            {{- end }}
+          startupProbe:
             httpGet:
-              path: /chargers
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 10
+              path: /actuator/health/readiness
+              port: management
+            periodSeconds: 1
+            failureThreshold: 90
           readinessProbe:
             httpGet:
-              path: /chargers
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 5
+              path: /actuator/health/readiness
+              port: management
+            periodSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: management
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              # Keep serving while the Service stops sending new requests here.
+              exec:
+                command: ["sleep", "5"]
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.configMap.enabled }}
           volumeMounts:
+            {{- if .Values.configMap.enabled }}
             - name: config-volume
               mountPath: /app/config
               readOnly: true
-          {{- end }}
-      {{- if .Values.configMap.enabled }}
+            {{- end }}
+            {{- if .Values.carbonFeed.hostPath }}
+            - name: carbon-feed
+              mountPath: /grid
+              readOnly: true
+            {{- end }}
       volumes:
+        {{- if .Values.configMap.enabled }}
         - name: config-volume
           configMap:
             name: {{ include "greencharge.fullname" . }}-config
-      {{- end }}
+        {{- end }}
+        {{- if .Values.carbonFeed.hostPath }}
+        - name: carbon-feed
+          hostPath:
+            path: {{ .Values.carbonFeed.hostPath }}
+            type: Directory
+        {{- end }}
+      {{- if not .Values.sunflower.enabled }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
