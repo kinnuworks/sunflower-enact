@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * on the management port (see the chart in {@code chart/}) are unaffected.
  */
 @RestController
-public class HealthEndpoint {
+public class SdkProbeEndpoint {
 
     @GetMapping("/health")
     public Map<String, String> health() {
