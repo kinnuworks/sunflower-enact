@@ -9,7 +9,7 @@ for 29 September, replayed faster. The only thing we speed up is the clock.
 [`docs/demo/run.json`, `data/README.md`]
 
 **Why doesn't ENACT do this already?**
-Its policy operator is only allowed to read policies and nodes. It writes its choice into the
+Its policy operator's permissions cover policies and nodes only, not apps. It writes its choice into the
 policy's status and stops there, and the plug-in pins the app once at deploy time. That looks
 like a deliberate split: one part decides, another acts. We built the part that acts.
 [`docs/platform-behaviour.md`]
@@ -23,7 +23,7 @@ copy before stopping the old one, and has rules about when not to move.
 Three things. The new copy starts first and must answer health checks before the old one is
 touched. The old copy is told to drain: it stops taking new connections and asks existing
 clients to reconnect. Then it shuts down gracefully. We found the second step was needed the
-hard way: before it, one request in a thousand was dropped.
+hard way: before it, we saw a request dropped just after a move.
 [`greencharge/.../placement/PlacementInfo.java`]
 
 **What if the new machine is broken?**
@@ -37,8 +37,8 @@ finishes the move. Tested: zero lost.
 **Won't it bounce back and forth?**
 That is what the guard rails are for. It waits for a change to last, it needs the new machine
 to be clearly better (10% by default) unless the current one actually breaks the policy, it
-waits between moves, and it has an hourly limit. In the run you saw, ENACT changed its pick
-three times and Sunflower moved once.
+waits between moves, and it has an hourly limit. In the recorded run, ENACT changed its pick
+twice and Sunflower moved once.
 
 **How much carbon does this save?**
 We don't claim a number. On this cluster the energy figures are model estimates inside a

@@ -75,8 +75,8 @@ the slides open in a second tab. Close Eclipse, Ollama and anything else heavy.
 > Getting here meant reading ENACT's source code and hitting its rough edges. We wrote every
 > one down, with the fix: thirty-nine findings. For example, on a fresh cluster the policy
 > never picks a machine at all, for four separate reasons, and our setup script fixes all four.
-> And the AI assistant loops forever on default settings, because its instructions are cut in
-> half before the model sees them. We found the cause and the one-line fix.
+> And the AI assistant gets stuck in a loop on default settings, because its instructions are
+> cut in half before the model sees them. We found the cause and the fix.
 >
 > One thing is still open, and I'd rather say it than hide it: the dataspace step needs
 > connection details we have not received yet.
