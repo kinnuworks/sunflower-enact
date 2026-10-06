@@ -69,6 +69,27 @@ Screenshots are `evidence/checklist/11` to `18`.
 | 31 | The packaging wizard generates an Ingress with no `ingressClassName`, and the challenge cluster has no ingress controller, so the Ingress is created and does nothing. | Ran | Reached the app through its Service |
 | 32 | The file picker for the kubeconfig cannot show `~/.kube`, the default location, because the folder is hidden. | Ran | Typed the path |
 
+### AI Assistant
+
+One step done through the assistant on 2026-10-06: `generate_runtime_policy`, with the model
+`qwen2.5:3b` from the SDK's own catalogue, running in Ollama 0.40. Screenshots are
+`evidence/checklist/19` to `22`; the failed first attempt is kept in `evidence/ai-assistant/`.
+
+| # | What happens | Status | Fix we used |
+|---|---|---|---|
+| 33 | On Ollama's default settings the assistant loops. The SDK sends about 4,300 tokens of instructions and tool definitions; Ollama's default context is 4,096 and its log shows `truncating input prompt limit=2050 prompt=4308` on every call. The model never sees the user's request. It called `generate_runtime_policy` 23 times and wrote a policy for region `us-west-2`, namespace `default`, green ratio 0.9, with an `aiCompliance` block nobody asked for. A larger model would hit the same limit. | Ran | Created a copy of the same model with `num_ctx` 16384. The step then took one tool call |
+| 34 | Each of those calls overwrote the same policy file without asking, and three were marked as failed with no reason shown. The loop ran for 23 calls before it ended; in our screenshot of it running, the Stop button is greyed out. | Ran | Cleared the chat |
+| 35 | With the larger context, the generated policy passed the CRD check and the API server accepted it, but it left out two things the request stated: `location.mode: Hard` and `memory.min`. The assistant reported the policy as generated and validated without mentioning what it had dropped. | Ran | Kept the wizard's policy as the one in use |
+| 36 | The Install button for Ollama opens the download web page. That page no longer has the download button the SDK's guide describes; the Mac app is behind a small "Download manually" link. | Ran | Used that link |
+| 37 | Before Ollama is installed, the model list reads `Could not list models: Request failed after 3 attempt(s): null`. | Ran | None needed |
+
+### Monitoring
+
+| # | What happens | Status | Fix we used |
+|---|---|---|---|
+| 38 | The brief's Monitor step says to watch the "Energy" and "LoadBalancer" dashboards. The cluster ships Grafana with the stock Kubernetes dashboards only; there is no Energy, LoadBalancer or Kepler dashboard, although the setup guide says Kepler energy tracking is pre-configured. | Ran | Wrote a four-panel dashboard from metrics that are present (`deploy/monitor/dashboard.json`) |
+| 39 | The API server, scheduler and controller manager restart in a loop when the laptop is busy, and the cluster does not recover by itself. The SDK-generated probes (1 s timeout, no startup probe) make it worse: each JVM they restart adds load. We lost the cluster twice this way. | Ran | Paused Grafana, Alertmanager, Hubble UI, kube-state-metrics and metrics-server by default (`deploy/dashboards.sh`); gave our own chart a 4 s probe timeout |
+
 ## To be completed
 
-The Dataspaces and AI Assistant modules are added once they have been run.
+The Dataspaces module is added once it has been run.

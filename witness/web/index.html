@@ -441,7 +441,7 @@ async function recording(file) {
   const doc = await (await fetch(file)).json();
   const clock = dataClock(doc), made = new Date(doc.tl.start);
   const end = clock ? Math.min(doc.tl.seconds, clock.end) : doc.tl.seconds;  // stop where the grid data stops
-  $('recorded').innerHTML = `<span class="recorded">Recording of a real run, ${made.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}. Not live.</span>`;
+  $('recorded').innerHTML = `<span class="recorded">Recording of a real run, ${made.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}. Not live.</span>`;
   $('controls').innerHTML = '<button id="again" class="primary">Play again</button><button id="whole">Show the whole run</button>';
   let began = performance.now(), whole = new URLSearchParams(location.search).has('end');
   $('again').onclick = () => { began = performance.now(); whole = false; };

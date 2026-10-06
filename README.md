@@ -1,410 +1,173 @@
-# ENACT Hackathon — Environment Setup & Student Guide
+# Sunflower
 
-Welcome to the **ENACT Hackathon**! 🚀
+**GreenCharge tells drivers where the clean power is. Sunflower makes GreenCharge go there itself.**
 
-This repository provides everything you need to bootstrap a local, production-grade **ENACT multi-node Kubernetes cluster** on your machine using [Kind (Kubernetes in Docker)](https://kind.sigs.k8s.io/). The cluster comes pre-installed with all core ENACT platform components, monitoring stacks, network observability tools, and application policy managers.
+Veles Hack 2026 · Challenge 3 · ENACT, Kubernetes Dynamic Adaptation
 
----
+![Two copies of GreenCharge over one replayed day of grid data. The standard build stays on Machine A for 48 seconds after its power turns dirty. The copy with Sunflower moves to Machine B after 13 seconds. Neither loses a request.](docs/img/race.png)
 
-## Table of Contents
+This is one real run on the challenge's three-node ENACT cluster, saved as it was measured
+([`docs/demo/run.json`](docs/demo/run.json)). Two copies of GreenCharge get the same traffic.
+The green share of each machine comes from a real day of British grid data, replayed at 30
+minutes every 4 seconds. Each stitch is one request, in the colour of the machine that
+answered it.
 
-1. [Architecture & Stack Overview](#architecture--stack-overview)
-2. [Prerequisites](#prerequisites)
-3. [Cluster Setup](#cluster-setup)
-4. [Verifying the Installation](#verifying-the-installation)
-5. [Accessing Services & Dashboards](#accessing-services--dashboards)
-   - [TDCME Monitor API (Swagger & Endpoints)](#1-tdcme-monitor-api)
-   - [APPLPM API (Application Policy Manager)](#2-applpm-api)
-   - [Grafana Dashboards](#3-grafana-dashboards)
-   - [Prometheus Query UI](#4-prometheus)
-   - [Cilium Hubble (Network Observability UI)](#5-cilium-hubble-ui)
-6. [Authentication & API Tokens](#authentication--api-tokens)
-7. [Working with Policies (APPLPM & RuntimePolicy)](#working-with-policies-applpm--runtimepolicy)
-8. [Eclipse IDE & ENACT SDK Installation](#eclipse-ide--enact-sdk-installation)
-9. [Cluster Cleanup & Teardown](#cluster-cleanup--teardown)
-10. [Troubleshooting & Common Issues](#troubleshooting--common-issues)
+| | Standard build | With Sunflower |
+|---|---|---|
+| Time spent breaking its own green rule | 48 s | 13 s |
+| Requests lost | 0 of 515 | 0 of 515 |
+| What it did when the power turned dirty | stayed where it was | moved in 4.9 s |
 
----
-
-## Architecture & Stack Overview
-
-Your local Kind cluster (`enact-dev`) is configured as a **3-node cluster** (1 control-plane and 2 worker nodes).
-
-```text
-Host System (Your Machine)
- ├── Port 35554 ─────────► TDCME Monitor API (Telemetry & Metrics)
- ├── Port 35080 ─────────► APPLPM API (Application Policy Model)
- ├── Port-Forward 3000 ──► Grafana (Metrics & Energy Visualizations)
- ├── Port-Forward 9090 ──► Prometheus (PromQL Engine)
- └── Port-Forward 12000 ─► Hubble UI (Network & Service-to-Service Observability)
-```
-
-### Core Components Installed
-
-| Component | Purpose | Access Method |
-| :--- | :--- | :--- |
-| **Cilium & Hubble** | eBPF-based high-performance CNI & network flow observability | Hubble UI via port-forward (`:12000`) |
-| **Kube-Prometheus-Stack** | Metrics scraping, storage, alerting, and Grafana visualization | Grafana (`:3000`), Prometheus (`:9090`) |
-| **Kepler** | Kubernetes Efficient Power Level Exporter (energy consumption metrics) | Scraped by Prometheus, visual in Grafana |
-| **TDCME (Monitor API & Agent)** | Telemetry Data Collector & Monitoring Engine | Host Port `http://localhost:35554` |
-| **APPLPM** | Application Policy Model & Runtime Policy Controller | Host Port `http://localhost:35080` |
-
----
-
-## Prerequisites
-
-Before starting, install the following tools on your host OS.
-
-> [!IMPORTANT]
-> Install tools from their **official documentation**. Avoid outdated package managers (like Ubuntu snap/older apt repositories) as they may lack required features or impose restrictive sandbox confinements.
-
-1. **Docker Engine / Desktop**
-   - Ensure Docker is installed and currently running:
-
-     ```bash
-     docker version
-     ```
-
-   - [Docker Installation Guide](https://docs.docker.com/engine/install/)
-   - *Linux users:* Make sure your user is in the `docker` group (`sudo usermod -aG docker $USER`), or you can run docker without root.
-
-2. **Kind (Kubernetes in Docker)**
-   - Kind version `v0.20.0` or newer is recommended:
-
-     ```bash
-     kind --version
-     ```
-
-   - [Kind Installation Guide](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
-
-3. **Kubectl**
-   - Official Kubernetes CLI matching cluster version `v1.30+`:
-
-     ```bash
-     kubectl version --client
-     ```
-
-   - [Kubectl Installation Guide](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
-
-4. **Helm**
-   - Helm version `v3.12+`:
-
-     ```bash
-     helm version
-     ```
-
-   - [Helm Installation Guide](https://helm.sh/docs/intro/install/)
-
-5. **Make**
-   - Standard build automation tool (`make` command). Pre-installed on macOS/Linux. On Windows, use WSL2 (Ubuntu recommended).
-
----
-
-## Cluster Setup
-
-To create the Kind cluster, install Cilium CNI, configure monitoring, and deploy all ENACT components, run a single command in the repository root:
+To watch the run play back, serve `docs/demo` and open it:
 
 ```bash
-make setup
+python3 -m http.server 8000 --directory docs/demo
 ```
 
-### What `make setup` does
+## The gap
 
-1. Creates a 3-node Kind cluster named `enact-dev` using `cluster-config/kind-config.yaml` with host port mappings (`35554` and `35080`).
-2. Disables the default Kind CNI and installs **Cilium CNI 1.20.1** with Hubble UI and Prometheus metrics.
-3. Sets up the `enact` namespace.
-4. Deploys **kube-prometheus-stack** (Prometheus Operator, Alertmanager, Grafana, Node Exporters).
-5. Deploys **Kepler** with Prometheus `ServiceMonitor` integration.
-6. Installs **TDCME Monitor API** and the **TDCME Monitor Agent**.
-7. Deploys the **APPLPM Controller Manager** and Custom Resource Definitions (CRDs).
+ENACT's policy operator does its job. Given a `RuntimePolicy`, it ranks the nodes and writes
+the best one to `status.chosenNode`, and it keeps that answer current: when a node's green
+share drops below the policy's minimum, the operator names another node within seconds.
 
----
+Nothing acts on that answer after the first day. The SDK reads `chosenNode` once, at deploy
+time, and pins the Deployment to that node. When the grid changes, the policy says "Machine B"
+and the app stays on Machine A, breaking a rule it declared itself. The Deployment does not
+even record which policy placed it.
 
-## Verifying the Installation
+GreenCharge exists to send drivers to the greenest charger. Following the checklist exactly,
+it does that from a machine that is no longer green.
 
-After `make setup` finishes, verify that all nodes and pods are running:
+## What Sunflower is
 
-### 1. Check Cluster Nodes
-
-```bash
-kubectl get nodes -o wide
-```
-
-You should see 3 nodes in `Ready` state:
-
-- `enact-dev-control-plane`
-- `enact-dev-worker`
-- `enact-dev-worker2`
-
-### 2. Check All ENACT Pods
-
-```bash
-kubectl get pods -n enact
-```
-
-All pods in the `enact` namespace should transition to `Running` (Ready: `1/1`, `2/2`, or `3/3` for Grafana):
-
-```text
-NAME                                                     READY   STATUS    RESTARTS   AGE
-alertmanager-infra-kube-prometheus-stac-alertmanager-0   2/2     Running   0          5m
-applpm-controller-manager-xxxxxxxxxx-xxxxx               1/1     Running   0          5m
-infra-grafana-xxxxxxxxxx-xxxxx                           3/3     Running   0          5m
-infra-kube-prometheus-stac-operator-xxxxxxxxxx-xxxxx     1/1     Running   0          5m
-infra-kube-state-metrics-xxxxxxxxxx-xxxxx                1/1     Running   0          5m
-infra-prometheus-node-exporter-xxxxx                     1/1     Running   0          5m
-kepler-xxxxx                                             1/1     Running   0          5m
-monitor-api-xxxxxxxxxx-xxxxx                             1/1     Running   0          5m
-prometheus-infra-kube-prometheus-stac-prometheus-0       2/2     Running   0          5m
-tdcme-agent-xxxxxxxxxx-xxxxx                             1/1     Running   0          5m
-```
-
----
-
-## Accessing Services & Dashboards
-
-### 1. TDCME Monitor API
-
-The Telemetry Data Collector & Monitoring Engine API is accessible directly on your host machine without needing port-forwarding (Depending on how docker is configured on your system the IP network may differ):
-
-- **Swagger / OpenAPI Documentation:** [http://localhost:35554/docs](http://localhost:35554/docs)
-- **Alternative Redoc:** [http://localhost:35554/redoc](http://localhost:35554/redoc)
-- **Health Check:**
-
-  ```bash
-  curl http://localhost:35554/healthz
-  ```
-
-- **List Registered Clusters:**
-
-  ```bash
-  curl http://localhost:35554/clusters
-  ```
-
----
-
-### 2. APPLPM API
-
-The Application Policy Model Controller HTTP server provides policy query and label assignment routes directly on host port `35080`:
-
-- **Check Current Policies:**
-
-  ```bash
-  curl http://localhost:35080/api/v1/namespaces/enact/policies
-  ```
-
-- **Node Labels API:**
-
-  ```bash
-  # Check policy or labels for a node
-  curl -X POST http://localhost:35080/api/v1/nodes/enact-dev-worker/labels
-  ```
-
----
-
-### 3. Grafana Dashboards
-
-Grafana comes with pre-configured dashboards for cluster performance, nodes, and Kepler energy tracking:
-
-1. **Start Port-Forwarding:**
-
-   ```bash
-   kubectl port-forward -n enact svc/infra-grafana 3000:80
-   ```
-
-2. **Retrieve the `admin` Password:**
-
-   ```bash
-   kubectl get secret --namespace enact infra-grafana -o jsonpath="{.data.admin-password}" | base64 -d && echo
-   ```
-
-3. **Open in Browser:** [http://localhost:3000](http://localhost:3000)
-   - **Username:** `admin`
-   - **Password:** *(the string printed by the command above)*
-
----
-
-### 4. Prometheus
-
-To run ad-hoc PromQL queries or inspect scraped metrics and targets:
-
-1. **Start Port-Forwarding:**
-
-   ```bash
-   kubectl port-forward -n enact svc/infra-kube-prometheus-stac-prometheus 9090:9090
-   ```
-
-2. **Open in Browser:** [http://localhost:9090](http://localhost:9090)
-   - Try PromQL queries such as:
-     - `kepler_node_platform_joules_total` (Kepler energy metrics)
-     - `container_cpu_usage_seconds_total` (Container CPU)
-     - `kube_pod_status_phase` (Pod lifecycle)
-
----
-
-### 5. Cilium Hubble UI
-
-Hubble gives you a visual real-time service map and deep network flow tracking:
-
-1. **Start Port-Forwarding:**
-
-   ```bash
-   kubectl port-forward -n kube-system svc/hubble-ui 12000:80
-   ```
-
-2. **Open in Browser:** [http://localhost:12000](http://localhost:12000)
-   - Select the `enact` namespace to visualize network traffic between pods.
-
----
-
-## Authentication & API Tokens
-
-Secured endpoints on the TDCME Monitor API require Bearer Token authorization. These tokens are generated as Kubernetes secrets during deployment:
-
-### 1. Retrieve the Admin Token
-
-Use this token in Swagger UI (`Authorize` button) or in curl HTTP headers:
-
-```bash
-ADMIN_TOKEN=$(kubectl get secret admin-token-secret -n enact -o jsonpath="{.data.token}" | base64 -d)
-echo "Admin Token: $ADMIN_TOKEN"
-```
-
-**Example authenticated API request:**
-
-```bash
-curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhost:35554/infra-state
-```
-
-### 2. Retrieve the Agent Join Token
-
-Used by external or edge clusters to join the central Monitor API:
-
-```bash
-JOIN_TOKEN=$(kubectl get secret join-token-secret -n enact -o jsonpath="{.data.token}" | base64 -d)
-echo "Join Token: $JOIN_TOKEN"
-```
-
----
-
-## Working with Policies (APPLPM & RuntimePolicy)
-
-The ENACT APPLPM controller monitors custom `RuntimePolicy` resources to enforce compute, memory, latency, and green energy constraints on workloads.
-
-### Example `RuntimePolicy`
-
-Create a file named `hackathon-policy.yaml`:
+A small Kubernetes controller (Go, about 740 lines). A Deployment opts in with one annotation
+naming its policy:
 
 ```yaml
-apiVersion: enact.eu/v1alpha1
-kind: RuntimePolicy
 metadata:
-  name: hackathon-app-policy
-  namespace: enact
-spec:
-  appLabels:
-    name: "hackathon"
-  cpu:
-    cores:
-      min: 1
-      max: 2
-  memory:
-    min: 100
-    max: 150
-    greenEnergy:
-      minRatio: "0.2"
-      mode: "Soft"
+  annotations:
+    sunflower.enact.eu/policy: greencharge-sunflower
 ```
 
-Apply the policy to the cluster:
+**Sunflower never chooses a machine.** ENACT decides; Sunflower carries the decision out,
+with the same pin the SDK uses (`nodeSelector["kubernetes.io/hostname"]`). What it adds is
+judgement about when to follow:
+
+| Sunflower will not | Why | Setting |
+|---|---|---|
+| move for a dip that does not last | grid data flickers | `--settle` |
+| leave a machine that still satisfies the policy for one that is barely better | with near-equal nodes the operator's pick switches back and forth (we measured 2 switches in 150 s) | `--margin` |
+| move again straight after moving | a move has a cost | `--dwell` |
+| move more than a set number of times an hour | a bad feed should not become a storm | `--max-moves-per-hour` |
+| stop the old copy before the new one is answering | no lost requests | built in |
+| leave a failed move half done | it puts the app back and says so | `--move-timeout` |
+
+Every action is written down in plain words, as a Kubernetes Event and in Sunflower's own log.
+That log is the bottom strip of the screen. `--dry-run` reports what it would do and changes
+nothing.
+
+The decision is one pure function with 12 unit tests:
+[`sunflower/internal/placement/decide.go`](sunflower/internal/placement/decide.go).
+
+## What we measured
+
+Everything below was run on the challenge cluster on a laptop. The raw files are in
+[`evidence/`](evidence) and [`docs/demo/`](docs/demo).
+
+| Test | Result |
+|---|---|
+| Real-data scene (the picture above) | 515 requests to each copy, 0 lost. Standard build 48 s below its green rule; Sunflower 13 s |
+| 30 forced moves in a row | all completed; 2,632 requests to the moving copy, 0 lost; median 8.8 s per move, slowest 15.3 s |
+| 20 forced moves, quieter machine | all completed; 1,389 requests, 0 lost; median 4.8 s per move |
+| Target machine cannot run the app | move undone after the timeout; old copy served throughout; 0 lost |
+| Controller killed in the middle of a move | its replacement finished the move from notes on the Deployment; 0 lost |
+
+A request counts as lost if it did not succeed within 2 seconds. Traffic is sent at a fixed
+rate that does not slow down when the app does, so a stall shows up as lost requests, not as
+fewer requests.
+
+## The challenge checklist
+
+Done through the ENACT SDK in Eclipse, with a screenshot of every screen in
+[`evidence/checklist/`](evidence/checklist).
+
+| Brief item | Status | Where |
+|---|---|---|
+| Policy model: CPU, RAM, latency, power, green mix, region | Done | [`policymodel.yml`](greencharge/src/main/resources/reconciliation/policymodel.yml) |
+| Application Controller extension | Done | SDK wizard (screenshots 01, 02); [`adaptation/`](greencharge/src/main/java/eu/enact/greencharge/adaptation), `POST /adaptation/recommendation` |
+| Tests pass with `mvn clean test` | Done, 14 tests | includes both cases the brief names: [`AdaptationServiceTest`](greencharge/src/test/java/eu/enact/greencharge/adaptation/AdaptationServiceTest.java) |
+| RuntimePolicy: Soft green ≥ 0.6, Hard region `eu-west`, availability 0.9 | Done | SDK wizard (03 to 06); [`greencharge.yaml`](greencharge/.enact/policies/greencharge.yaml) |
+| Packaging: Helm chart, image `greencharge:1.0`, port 8080, ingress `greencharge.local` | Done | SDK wizard (07 to 10); [`sdk-packaging/`](greencharge/sdk-packaging), [`sdk-manifests/`](greencharge/sdk-manifests) |
+| Deploy with the policy; the operator places the pod | Done | SDK deploy (11 to 18): policy applied, node chosen, Deployment pinned, pod running on it |
+| One step through the AI assistant (bonus) | Done | `generate_runtime_policy` (19 to 22). The policy it wrote is valid but dropped two fields we asked for, so the wizard's policy is the one in use; details in the field report |
+| Dataspace feed | **Not done yet** | The SDK's Dataspaces step needs a connector address and key that are not in the challenge material; we have asked the mentors ([`docs/mentor-message.md`](docs/mentor-message.md)). The feed itself is wired: GreenCharge reads `carbon.feed.file`, and here that file is written from real public grid data |
+| Monitor under a load burst | Done | [`evidence/monitor-grafana-burst.png`](evidence/monitor-grafana-burst.png): traffic, CPU and Kepler's energy estimate for each copy; `deploy/monitor.sh`, `deploy/burst.sh` |
+
+Beyond the brief, the adaptation service also checks the three policy fields the Application
+Controller loads but never compares with anything (green energy mix, power ceiling, region),
+and recommends `relocate` when one of them fails.
+
+## What we are giving back
+
+Getting here meant reading ENACT's source and running into its rough edges. We wrote each one
+down with the fix we used: **39 findings**, each marked as reproduced or read, in
+[`docs/field-report.md`](docs/field-report.md). The ones a new user hits first:
+
+- **A policy never gets a `chosenNode` on a fresh cluster.** Four separate causes, all fixed
+  in [`deploy/up.sh`](deploy/up.sh): the setup script stops before it labels the nodes, the
+  monitoring agent is installed with an empty token, the operator's two settings are blank,
+  and the operator sends no token to the monitor API.
+- **The starter app answers 401 on every route once rebuilt,** and its jar is 376 MB, because
+  the Application Controller library brings in about 100 dependencies including a login wall.
+  Importing the two classes it needs gives a 23 MB jar that starts in a second.
+- **The AI assistant loops on Ollama's default settings.** The SDK's prompt is about 4,300
+  tokens and Ollama's default context cuts it to 2,050, so the model never sees the request.
+  We watched it call the same tool 23 times and write a policy for the wrong region. A model
+  copy with a 16k context did the step in one call.
+- **The packaging wizard writes manifests the API server rejects** (`version: 1.0` unquoted),
+  and probes on a `/health` path the app does not have.
+
+How the platform behaves when a node's green share changes, with what we observed for each
+policy mode, is in [`docs/platform-behaviour.md`](docs/platform-behaviour.md).
+
+## Run it
+
+Needs Docker with about 12 GB of memory, `kind`, `kubectl`, Helm 3, Java 21, Maven and Go.
 
 ```bash
-kubectl apply -f hackathon-policy.yaml
+./deploy/up.sh      # the ENACT cluster, with the four fixes above
+./deploy/apps.sh    # both copies of GreenCharge, Sunflower, the grid replay, the screen
 ```
 
-Verify the policy is recognized by APPLPM:
+Then open <http://localhost:35590> and press **Play**. `./deploy/scene.sh` sets the stage
+again for another run, `./deploy/soak.sh 30 out.json` repeats the forced-move test, and
+`./deploy/record.sh` saves the run you just watched.
 
-```bash
-kubectl get runtimepolicies.enact.eu -n enact
-curl http://localhost:35080/api/v1/namespaces/enact/policies
-```
+The organisers' original setup guide is kept at [`docs/enact-setup.md`](docs/enact-setup.md).
 
----
+## Honest limits
 
-## Eclipse IDE & ENACT SDK Installation
+- **One laptop.** The three "machines" are containers on a Kind cluster. Their green share is
+  assigned from real regional grid data; it is not measured at the machine.
+- **Replayed time.** The grid data is real and unedited, but it is played faster than it
+  happened, and the waiting times (8 s to be sure, 30 s between moves) are shortened to match.
+  The defaults are 20 s and 60 s; on a real grid they would be minutes.
+- **No carbon claim.** The energy figures this cluster reports are model estimates inside a
+  virtual machine, so we report time out of policy, which we can measure.
+- **A stateless app, one replica.** Moving an app that holds state needs more than this.
+- **Move time follows the host.** 4.9 s on a quiet machine, up to 15 s on a busy one.
 
-If you are developing or modeling using the **ENACT SDK**:
+## Where things are
 
-1. **Read the Full Installation Guide:**
-   - Open the included HTML guide in your browser: [install-guide.html](install-guide.html)
-   - Or open the PDF version: `ENACT SDK — Installation Guide.pdf`
-2. **Quick Summary:**
-   - Install **Java 21+** and **Eclipse IDE for Java Developers (2025-12 / 4.38+)**.
-   - Open Eclipse and navigate to **Help → Eclipse Marketplace…**.
-   - Search for `ENACT` and install the **ENACT Software Development Kit** (or add update site: `https://pages.eclipse.dev/eclipse-research-labs/enact-project/software-development-kit/releases/latest/`).
-   - Open **Window → Show View → Other… → ENACT SDK → SDK Control Panel**.
+| Path | What |
+|---|---|
+| [`sunflower/`](sunflower) | the controller |
+| [`witness/`](witness) | traffic, per-request log, and the screen |
+| [`gridbridge/`](gridbridge) | replays the grid data into ENACT's Label API and GreenCharge's carbon feed |
+| [`greencharge/`](greencharge) | the app, its adaptation service, charts, and everything the SDK generated |
+| [`deploy/`](deploy) | cluster and scene scripts |
+| [`evidence/`](evidence), [`docs/`](docs) | raw results, screenshots, field report |
 
----
-
-## Cluster Cleanup & Teardown
-
-When you are finished or want to start fresh from scratch:
-
-```bash
-make clean
-```
-
-This will:
-
-- Delete the Kind cluster and all running containers.
-- Clean up the Helm repositories.
-- Reclaim local Docker disk space.
-
----
-
-## Troubleshooting & Common Issues
-
-### 1. `docker: command not found` or Permission Denied
-
-- Ensure Docker Desktop or Docker Engine is started.
-- On Linux, if you see `permission denied while trying to connect to the Docker daemon socket`, run:
-
-  ```bash
-  sudo chmod 666 /var/run/docker.sock
-  ```
-
-  or log out and back in after running `sudo usermod -aG docker $USER`.
-
-### 2. Port Conflict (`bind: address already in use` on 35554 or 35080)
-
-- Kind maps `35554` (TDCME) and `35080` (APPLPM) on `0.0.0.0`.
-- If another process is using these ports, identify it with:
-
-  ```bash
-  lsof -i :35554
-  lsof -i :35080
-  ```
-
-- Terminate the conflicting process or modify the hostPort mappings in [cluster-config/kind-config.yaml](cluster-config/kind-config.yaml).
-
-### 3. Architecture / `exec format error` on Linux x86_64
-
-- If you see `exec format error` in pod logs for TDCME or APPLPM, run:
-
-  ```bash
-  docker run --privileged --rm tonistiigi/binfmt --install arm64
-  ```
-
-  This enables multi-architecture QEMU binary emulation for ARM64 containers.
-
-### 4. Pods stuck in `Pending` or slow startup
-
-- Kind downloads several Docker images on first run (~1-2 GB total). On slower connections, this may take a few minutes.
-- Inspect the pod events to see download progress:
-
-  ```bash
-  kubectl describe pod <pod-name> -n enact
-  ```
-
----
-
-Good luck with your Hackathon project! If you have questions, refer to the [ENACT Eclipse Project](https://gitlab.eclipse.org/eclipse-research-labs/enact-project) documentation.
+Grid data: Carbon Intensity API, National Energy System Operator (NESO), CC BY 4.0; details in
+[`data/README.md`](data/README.md). Typefaces on the screen: Fraunces and Atkinson
+Hyperlegible, both SIL OFL 1.1. Code: Apache-2.0, see [`LICENSE`](LICENSE).
