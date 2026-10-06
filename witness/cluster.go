@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"sort"
@@ -22,6 +23,8 @@ type ClusterState struct {
 	Policies    []PolicyView `json:"policies"`
 	Deployments []DeployView `json:"deployments"`
 	Events      []EventView  `json:"events"`
+	// Receipts is Sunflower's own log of actions, newest last.
+	Receipts json.RawMessage `json:"receipts,omitempty"`
 }
 
 type NodeView struct {
@@ -67,6 +70,7 @@ type clusterWatcher struct {
 	token     string
 	client    *http.Client
 	namespace string
+	receipts  string // URL of Sunflower's /receipts, optional
 
 	mu    sync.Mutex
 	state ClusterState
@@ -75,7 +79,8 @@ type clusterWatcher struct {
 const saDir = "/var/run/secrets/kubernetes.io/serviceaccount"
 
 func newClusterWatcher() *clusterWatcher {
-	w := &clusterWatcher{namespace: env("WITNESS_NAMESPACE", "enact"), client: &http.Client{Timeout: 4 * time.Second}}
+	w := &clusterWatcher{namespace: env("WITNESS_NAMESPACE", "enact"), receipts: os.Getenv("WITNESS_RECEIPTS"),
+		client: &http.Client{Timeout: 4 * time.Second}}
 	if api := os.Getenv("KUBE_API"); api != "" {
 		w.base = api
 		return w
@@ -280,6 +285,14 @@ func (w *clusterWatcher) poll(ctx context.Context) (ClusterState, error) {
 		sort.Slice(st.Events, func(i, j int) bool { return st.Events[i].Time > st.Events[j].Time })
 		if len(st.Events) > 30 {
 			st.Events = st.Events[:30]
+		}
+	}
+	if w.receipts != "" {
+		if resp, err := http.Get(w.receipts); err == nil {
+			if body, err := io.ReadAll(resp.Body); err == nil && resp.StatusCode == http.StatusOK && json.Valid(body) {
+				st.Receipts = body
+			}
+			resp.Body.Close()
 		}
 	}
 	return st, nil

@@ -58,6 +58,8 @@ spec:
           args:
             - --targets=standard=http://standard-greencharge:8080,sunflower=http://sunflower-greencharge:8080
             - --rate=5
+          env:
+            - {name: WITNESS_RECEIPTS, value: "http://sunflower:8085/receipts"}
           ports: [{containerPort: 8090}]
           resources:
             requests: {cpu: 20m, memory: 32Mi}

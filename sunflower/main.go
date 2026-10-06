@@ -8,6 +8,7 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
 	"time"
 
@@ -30,6 +31,7 @@ func main() {
 	flag.IntVar(&s.MaxMovesPerHour, "max-moves-per-hour", s.MaxMovesPerHour, "cap on moves per app per hour")
 	moveTimeout := flag.Duration("move-timeout", 90*time.Second, "undo a move that has not completed in this time")
 	dryRun := flag.Bool("dry-run", false, "report what would happen without changing anything")
+	receiptsAddr := flag.String("receipts-addr", ":8085", "address serving the log of actions as JSON at /receipts")
 	opts := zap.Options{}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
@@ -47,7 +49,16 @@ func main() {
 		log.Error(err, "cannot start")
 		os.Exit(1)
 	}
+	receipts := controller.NewReceipts(500)
+	go func() {
+		mux := http.NewServeMux()
+		mux.Handle("GET /receipts", receipts)
+		if err := http.ListenAndServe(*receiptsAddr, mux); err != nil {
+			log.Error(err, "receipts endpoint stopped")
+		}
+	}()
 	r := &controller.Reconciler{
+		Receipts:    receipts,
 		Client:      mgr.GetClient(),
 		Recorder:    mgr.GetEventRecorderFor("sunflower"),
 		Settings:    s,

@@ -60,3 +60,25 @@ Sunflower treats an empty choice as "no decision" and leaves the app where it is
   headline them.
 - `metrics-server` is installed but never becomes ready on Kind (no `--kubelet-insecure-tls`),
   so the standard horizontal autoscaler cannot work on this cluster as shipped.
+
+## What Sunflower does on this platform (measured)
+
+From `deploy/soak.sh` on 2026-10-06, 5 requests per second to each copy:
+
+| Measure | Result |
+|---|---|
+| Forced moves | 20 of 20 completed |
+| Requests to the moving copy during the run | 1,389, of which 0 failed |
+| Time per move (new pod ready, old pod gone) | median 4.8 s, slowest 14.7 s |
+| Standard build over the same period | 1,389 requests, 0 failed, never left its first node |
+
+Raw data: `evidence/moves-20.json`.
+
+Two failure cases were also exercised:
+
+- **Target node cannot run the app** (node cordoned). The new pod stayed pending, the move was
+  undone after the timeout, and the old copy served throughout: 0 failed requests. The policy
+  operator had still chosen the cordoned node; it does not look at whether a node is
+  schedulable.
+- **Controller killed in the middle of a move.** The replacement controller read its notes
+  from the Deployment's annotations and the move completed: 0 failed requests.

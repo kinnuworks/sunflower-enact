@@ -53,6 +53,8 @@ var runtimePolicyGVK = schema.GroupVersionKind{Group: "enact.eu", Version: "v1al
 type Reconciler struct {
 	client.Client
 	Recorder record.EventRecorder
+	// Receipts, when set, receives a copy of every action for the HTTP log.
+	Receipts *Receipts
 	Settings placement.Settings
 	// MoveTimeout is how long a move may take before it is undone.
 	MoveTimeout time.Duration
@@ -121,15 +123,15 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	// is part of the behaviour, not an absence of it.
 	if had := dep.Annotations[candidateAnn]; had != "" && d.Candidate == "" && d.Action == placement.Stay {
 		waited := now.Sub(parseTime(dep.Annotations[candidateSinceAnn])).Round(time.Second)
-		r.Recorder.Eventf(&dep, corev1.EventTypeNormal, "Ignored",
+		r.note(&dep, corev1.EventTypeNormal, "Ignored", Receipt{Seconds: waited.Seconds()},
 			"Ignored a %s dip: %s, but it recovered before the %s waiting period ended. No move.",
 			waited, lowerFirst(dep.Annotations[candidateCauseAnn]), r.Settings.Settle.Round(time.Second))
 	}
 	if d.Action == placement.Wait && dep.Annotations[candidateAnn] != d.Candidate {
-		r.Recorder.Event(&dep, corev1.EventTypeNormal, "Watching", d.Reason)
+		r.note(&dep, corev1.EventTypeNormal, "Watching", Receipt{To: d.Target}, "%s", d.Reason)
 	}
 	if d.Action == placement.Hold && dep.Annotations[statusAnn] != string(placement.Hold) {
-		r.Recorder.Event(&dep, corev1.EventTypeNormal, "Holding", d.Reason)
+		r.note(&dep, corev1.EventTypeNormal, "Holding", Receipt{To: d.Target}, "%s", d.Reason)
 	}
 
 	if err := r.remember(ctx, &dep, map[string]string{
@@ -149,7 +151,7 @@ func (r *Reconciler) startMove(ctx context.Context, dep *appsv1.Deployment, in p
 		from = in.Current.Name
 	}
 	if r.DryRun {
-		r.Recorder.Eventf(dep, corev1.EventTypeNormal, "WouldMove", "Dry run: would move to %s. %s", d.Target, d.Reason)
+		r.note(dep, corev1.EventTypeNormal, "WouldMove", Receipt{From: from, To: d.Target}, "Dry run: would move to %s. %s", d.Target, d.Reason)
 		return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 	}
 	patch := client.MergeFrom(dep.DeepCopy())
@@ -170,9 +172,9 @@ func (r *Reconciler) startMove(ctx context.Context, dep *appsv1.Deployment, in p
 		return ctrl.Result{}, err
 	}
 	if from == "" {
-		r.Recorder.Eventf(dep, corev1.EventTypeNormal, "Placing", "Placing on %s. %s", d.Target, d.Reason)
+		r.note(dep, corev1.EventTypeNormal, "Placing", Receipt{To: d.Target}, "Placing on %s. %s", d.Target, d.Reason)
 	} else {
-		r.Recorder.Eventf(dep, corev1.EventTypeNormal, "Moving", "Moving from %s to %s. %s", from, d.Target, d.Reason)
+		r.note(dep, corev1.EventTypeNormal, "Moving", Receipt{From: from, To: d.Target}, "Moving from %s to %s. %s", from, d.Target, d.Reason)
 	}
 	return ctrl.Result{RequeueAfter: time.Second}, nil
 }
@@ -197,9 +199,10 @@ func (r *Reconciler) followMove(ctx context.Context, dep *appsv1.Deployment, sta
 			return ctrl.Result{}, err
 		}
 		if from == "" {
-			r.Recorder.Eventf(dep, corev1.EventTypeNormal, "Placed", "Running on %s after %s.", target, took.Round(100*time.Millisecond))
+			r.note(dep, corev1.EventTypeNormal, "Placed", Receipt{To: target, Seconds: took.Seconds()},
+				"Running on %s after %s.", target, took.Round(100*time.Millisecond))
 		} else {
-			r.Recorder.Eventf(dep, corev1.EventTypeNormal, "Moved", "Moved from %s to %s in %s. %s",
+			r.note(dep, corev1.EventTypeNormal, "Moved", Receipt{From: from, To: target, Seconds: took.Seconds()}, "Moved from %s to %s in %s. %s",
 				from, target, took.Round(100*time.Millisecond), cause)
 		}
 		return ctrl.Result{}, nil
@@ -216,7 +219,7 @@ func (r *Reconciler) followMove(ctx context.Context, dep *appsv1.Deployment, sta
 		if err := r.Patch(ctx, dep, patch, client.FieldOwner("sunflower")); err != nil {
 			return ctrl.Result{}, err
 		}
-		r.Recorder.Eventf(dep, corev1.EventTypeWarning, "Aborted",
+		r.note(dep, corev1.EventTypeWarning, "Aborted", Receipt{From: from, To: target, Seconds: took.Seconds()},
 			"The app was not ready on %s after %s, so it stays on %s. The old copy kept serving throughout.",
 			target, r.MoveTimeout.Round(time.Second), from)
 		return ctrl.Result{}, nil

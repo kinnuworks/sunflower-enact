@@ -1,0 +1,38 @@
+{
+  "started": "2026-10-06T18:39:48Z",
+  "movesRequested": 20,
+  "movesCompleted": 20,
+  "moveSeconds": {
+    "min": 4.6,
+    "median": 4.77,
+    "p95": 14.73,
+    "max": 14.73
+  },
+  "traffic": [
+    {
+      "target": "standard",
+      "requests": 1389,
+      "failed": 0,
+      "slow": 12,
+      "byNode": {
+        "enact-dev-worker2": 1389
+      },
+      "lastNode": "enact-dev-worker2",
+      "p50Ms": 1.902,
+      "p95Ms": 10.147
+    },
+    {
+      "target": "sunflower",
+      "requests": 1389,
+      "failed": 0,
+      "slow": 52,
+      "byNode": {
+        "enact-dev-worker": 745,
+        "enact-dev-worker2": 644
+      },
+      "lastNode": "enact-dev-worker2",
+      "p50Ms": 4.469,
+      "p95Ms": 28.501
+    }
+  ]
+}
