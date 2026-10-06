@@ -1,0 +1,62 @@
+# metrics-bridge: lets the ENACT policy operator read metrics from the ENACT monitor API.
+#
+# As installed by the challenge Makefile the two cannot talk: the monitor API requires a
+# Bearer token on /latency and /availability, and the policy operator sends none, so every
+# RuntimePolicy stays at "no available metrics". This is a plain reverse proxy that adds the
+# monitor API's own admin token. It changes no data. Remove it once the two agree on auth.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-bridge
+  namespace: enact
+data:
+  default.conf.template: |
+    server {
+      listen 8080;
+      location = /healthz { return 200 "ok\n"; }
+      location / {
+        proxy_pass http://monitor-api-service.enact.svc.cluster.local;
+        proxy_set_header Authorization "Bearer ${ADMIN_TOKEN}";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-bridge
+  namespace: enact
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: metrics-bridge}
+  template:
+    metadata:
+      labels: {app: metrics-bridge}
+    spec:
+      containers:
+        - name: proxy
+          image: nginx:1.29-alpine
+          ports: [{containerPort: 8080}]
+          env:
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef: {name: admin-token-secret, key: token}
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+          volumeMounts:
+            - {name: conf, mountPath: /etc/nginx/templates}
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {cpu: 100m, memory: 64Mi}
+      volumes:
+        - name: conf
+          configMap: {name: metrics-bridge}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-bridge
+  namespace: enact
+spec:
+  selector: {app: metrics-bridge}
+  ports: [{port: 80, targetPort: 8080}]

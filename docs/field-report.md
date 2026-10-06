@@ -28,7 +28,21 @@ reproduced).
 | 11 | The policy model's green energy mix, power ceiling and location are loaded but never compared with anything. | Ran | Evaluated in `AdaptationService` on top of the controller's verdict |
 | 12 | A missing or malformed policy file is logged and otherwise ignored; the app starts with an empty policy. | Read | Test asserts the policy loaded |
 
+## Cluster setup and platform wiring
+
+Details and evidence are in [platform-behaviour.md](platform-behaviour.md).
+
+| # | What happens | Status | Fix we used |
+|---|---|---|---|
+| 13 | `make setup` stops with an error on a first run: it waits 120 s for all pods, which is shorter than the image pulls. The node-labelling step never runs. | Ran | Wait until ready, then label |
+| 14 | The monitoring agent is installed with an empty join token (the Makefile reads the secret before it exists), so the cluster never registers. | Ran | Re-install the agent with the token |
+| 15 | The policy operator is installed with `METRICS_API_URL` and `CLUSTER_NAME` empty, so every `RuntimePolicy` reports `no available metrics`. Its README names the variable `MONITOR_API_URL`, which the code does not read. | Ran | Set both at install |
+| 16 | The monitor API requires a Bearer token on the routes the policy operator calls; the operator sends none. | Ran | A reverse proxy that adds the token |
+| 17 | `helm upgrade` on the policy operator chart fails because it renders an image pull secret with an empty name. | Ran | Set values at install time |
+| 18 | With two equally good nodes, policies with a Hard constraint switch `chosenNode` back and forth every few passes. | Ran | Sunflower only follows a choice that is better and stable |
+| 19 | When no node qualifies under Hard green, the reason reports `green ratio 0.00` whatever the node's real ratio is. | Ran | None needed |
+| 20 | `metrics-server` never becomes ready on Kind as installed. | Ran | Not used |
+
 ## To be completed
 
-Sections for the policy operator, the SDK and the monitoring stack are added as each is
-exercised on the cluster.
+The SDK section is added once its steps have been run in Eclipse.
