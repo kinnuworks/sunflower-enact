@@ -76,6 +76,10 @@ spec:
             {{- if .Values.carbonFeed.hostPath }}
             - name: CARBON_FEED_FILE
               value: /grid/{{ .Values.carbonFeed.file }}
+            {{- with .Values.carbonFeed.origin }}
+            - name: CARBON_FEED_ORIGIN
+              value: {{ . | quote }}
+            {{- end }}
             {{- end }}
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}

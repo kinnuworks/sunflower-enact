@@ -24,6 +24,9 @@ sunflower:
 carbonFeed:
   hostPath: ""
   file: carbon.json
+  # What the page's badge says about where the file came from. Leave empty for a file
+  # transferred through the dataspace.
+  origin: ""
 nameOverride: ""
 fullnameOverride: ""
 

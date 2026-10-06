@@ -41,10 +41,14 @@ public class CarbonService {
             "Harbor", 340.0);
 
     private final String feedFile;
+    /** Where the feed file came from, shown in the page's badge so it never claims more than is true. */
+    private final String feedOrigin;
     private final ObjectMapper json = new ObjectMapper();
 
-    public CarbonService(@Value("${carbon.feed.file:REPLACE_ME}") String feedFile) {
+    public CarbonService(@Value("${carbon.feed.file:REPLACE_ME}") String feedFile,
+            @Value("${carbon.feed.origin:dataspace file}") String feedOrigin) {
         this.feedFile = feedFile;
+        this.feedOrigin = feedOrigin;
     }
 
     /** Current carbon intensity per district, from the transferred file if present, else the mock. */
@@ -55,7 +59,7 @@ public class CarbonService {
             intensity = MOCK_INTENSITY;
             source = isConfigured() ? "mock (feed file not found)" : "mock (no dataspace feed configured)";
         } else {
-            source = "live (dataspace file)";
+            source = "live (" + feedOrigin + ")";
         }
         return new CarbonSnapshot(source, intensity, greenScores(intensity));
     }
