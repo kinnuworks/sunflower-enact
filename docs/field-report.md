@@ -54,6 +54,21 @@ Details and evidence are in [platform-behaviour.md](platform-behaviour.md).
 | 25 | The policy wizard validates the result against the CRD before writing and shows the YAML first. This worked well and is the step we would point new users to. | Ran | n/a |
 | 26 | With image tag `1.0`, the packaging wizard writes the label `app.kubernetes.io/version: 1.0` unquoted in the Kubernetes manifests. YAML reads that as a number and the API server rejects the file: `cannot unmarshal number into ... metadata.labels of type string`. | Ran | Quoted the value in the three generated files; nothing else in them was changed |
 
+### Application Deployment
+
+Deployed from the SDK on 2026-10-06 to the Kind cluster: policy applied, `chosenNode` read,
+Deployment pinned with `nodeSelector["kubernetes.io/hostname"]`, pod running on that node.
+Screenshots are `evidence/checklist/11` to `18`.
+
+| # | What happens | Status | Fix we used |
+|---|---|---|---|
+| 27 | The deploy flow worked first time once the cluster was registered: connection test, a preview of every object, then a result naming the chosen node and where the pod is running. The preview marks which object gets pinned. | Ran | n/a |
+| 28 | The result dialog says `Rejected: enact-dev-worker`. That node met every rule in the policy (region `eu-west`, green ratio 0.85 against a minimum of 0.60); it only ranked second. "Rejected" reads as "failed the policy". | Ran | None needed; "not selected" would be clearer |
+| 29 | The policy status gives the same score to the chosen node and the one it ranked below: `selected based on vector distance score (0.0000)` and `lost in ranking (score 0.0000)`. The reason does not say what separated them. | Ran | None needed |
+| 30 | The pin is written once. After the deploy the Deployment carries no reference to its policy (no label or annotation), so nothing can tell later which policy placed it. | Ran | Sunflower's opt-in annotation names the policy |
+| 31 | The packaging wizard generates an Ingress with no `ingressClassName`, and the challenge cluster has no ingress controller, so the Ingress is created and does nothing. | Ran | Reached the app through its Service |
+| 32 | The file picker for the kubeconfig cannot show `~/.kube`, the default location, because the folder is hidden. | Ran | Typed the path |
+
 ## To be completed
 
-The Dataspaces, AI Assistant and Application Deployment modules are added once they have been run.
+The Dataspaces and AI Assistant modules are added once they have been run.
