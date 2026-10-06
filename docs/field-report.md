@@ -52,6 +52,7 @@ Details and evidence are in [platform-behaviour.md](platform-behaviour.md).
 | 23 | The packaging wizard accepts `greencharge:1.0` in the Repository box with Tag left empty, which would render the image as `greencharge:1.0:latest`. It could split the value or flag it. | Ran | Entered repository and tag separately |
 | 24 | The Application Controller wizard appends `server.port` and `management.server.port` to `application.properties` even when both are already set there. | Ran | Left as written; values match |
 | 25 | The policy wizard validates the result against the CRD before writing and shows the YAML first. This worked well and is the step we would point new users to. | Ran | n/a |
+| 26 | With image tag `1.0`, the packaging wizard writes the label `app.kubernetes.io/version: 1.0` unquoted in the Kubernetes manifests. YAML reads that as a number and the API server rejects the file: `cannot unmarshal number into ... metadata.labels of type string`. | Ran | Quoted the value in the three generated files; nothing else in them was changed |
 
 ## To be completed
 

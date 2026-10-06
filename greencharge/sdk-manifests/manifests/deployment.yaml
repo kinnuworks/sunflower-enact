@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: greencharge
     app.kubernetes.io/instance: greencharge
-    app.kubernetes.io/version: 1.0
+    app.kubernetes.io/version: "1.0"
     app.kubernetes.io/component: service
     app.kubernetes.io/managed-by: enact-apm
     app: greencharge
@@ -27,7 +27,7 @@ spec:
       labels:
         app.kubernetes.io/name: greencharge
         app.kubernetes.io/instance: greencharge
-        app.kubernetes.io/version: 1.0
+        app.kubernetes.io/version: "1.0"
         app.kubernetes.io/component: service
         app.kubernetes.io/managed-by: enact-apm
         app: greencharge
