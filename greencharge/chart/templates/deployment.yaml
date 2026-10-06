@@ -96,6 +96,10 @@ spec:
               path: /actuator/health/liveness
               port: management
             periodSeconds: 10
+            # Generous on purpose: on a busy laptop a slow answer is not a dead app, and restarting
+            # a JVM because the host is busy only makes the host busier.
+            timeoutSeconds: 4
+            failureThreshold: 6
           lifecycle:
             preStop:
               # Ask the app to hand its clients over before it is stopped; see PlacementInfo.drain.

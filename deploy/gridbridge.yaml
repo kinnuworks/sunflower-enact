@@ -25,7 +25,7 @@ spec:
             # A real afternoon and evening: 29 September 2026 from 12:00 UTC.
             # Worker = North East England, worker2 = North West England.
             - --start=2026-09-29T12:00Z
-            - --periods=40
+            - --periods=26
             - --step=4s
           ports: [{containerPort: 8095}]
           volumeMounts:

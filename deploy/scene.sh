@@ -9,11 +9,14 @@ k() { kubectl --context "$CTX" "$@"; }
 h() { helm --kube-context "$CTX" "$@"; }
 
 curl -fsS -X POST "$WITNESS/grid/reset" >/dev/null
-sleep 8   # let the labels land and the policy operator re-rank
-CHOSEN=""
-for _ in $(seq 1 30); do
-  CHOSEN="$(k get runtimepolicy -n enact greencharge-standard -o jsonpath='{.status.chosenNode}')"
-  [ -n "$CHOSEN" ] && break; sleep 2
+# The policy operator re-ranks on its own schedule (every 30 s), so wait until its choice has
+# been the same for longer than that before treating it as the choice for the scene's start.
+CHOSEN=""; SINCE=$SECONDS
+for _ in $(seq 1 90); do
+  NOW="$(k get runtimepolicy -n enact greencharge-standard -o jsonpath='{.status.chosenNode}')"
+  [ "$NOW" = "$CHOSEN" ] || { CHOSEN="$NOW"; SINCE=$SECONDS; }
+  [ -n "$CHOSEN" ] && [ $((SECONDS - SINCE)) -ge 40 ] && break
+  sleep 2
 done
 [ -n "$CHOSEN" ] || { echo "the policy operator has not chosen a node" >&2; exit 1; }
 

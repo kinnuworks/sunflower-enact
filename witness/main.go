@@ -74,6 +74,7 @@ type hub struct {
 	subs      map[chan []byte]struct{}
 	slowMs    float64
 	out       io.Writer
+	timeline  *timeline
 }
 
 func newHub(slowMs float64, out io.Writer) *hub {
@@ -83,6 +84,7 @@ func newHub(slowMs float64, out io.Writer) *hub {
 		subs:      map[chan []byte]struct{}{},
 		slowMs:    slowMs,
 		out:       out,
+		timeline:  newTimeline(),
 	}
 }
 
@@ -124,6 +126,7 @@ func (h *hub) record(s Sample) {
 		}
 	}
 	h.mu.Unlock()
+	h.timeline.request(s)
 }
 
 func (h *hub) failed() []Sample {
@@ -162,6 +165,7 @@ func (h *hub) account(name string, ratio, min *float64, dt float64) {
 	if t.Violating {
 		t.OutOfPolicySeconds += dt
 	}
+	h.timeline.below(name, t.Violating, time.Now())
 }
 
 // servingNode is the node that answered the target's most recent successful request.
@@ -181,6 +185,7 @@ func (h *hub) reset() {
 	h.recent = nil
 	h.failures = nil
 	h.mu.Unlock()
+	h.timeline.reset()
 }
 
 func (h *hub) subscribe() chan []byte {
@@ -323,6 +328,18 @@ func main() {
 
 	cluster := newClusterWatcher()
 	cluster.onPoll = func(st ClusterState, dt float64) {
+		now := time.Now()
+		for _, n := range st.Nodes {
+			if n.GreenRatio != nil {
+				h.timeline.ratio(n.Name, *n.GreenRatio, now)
+			}
+		}
+		h.timeline.mark(st.GridTime, now)
+		for _, p := range st.Policies {
+			if p.Name == "greencharge-"+targets[len(targets)-1].name {
+				h.timeline.chose(p.ChosenNode, now)
+			}
+		}
 		for _, t := range targets {
 			node := h.servingNode(t.name)
 			var ratio, min *float64
@@ -349,6 +366,9 @@ func main() {
 	mux.HandleFunc("GET /api/state", func(w http.ResponseWriter, r *http.Request) {
 		totals, recent := h.snapshot()
 		writeJSON(w, map[string]any{"totals": totals, "recent": recent, "cluster": cluster.snapshot(), "slowMs": *slowMs, "failures": h.failed()})
+	})
+	mux.HandleFunc("GET /api/timeline", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, h.timeline.snapshot())
 	})
 	mux.HandleFunc("POST /api/reset", func(w http.ResponseWriter, r *http.Request) {
 		h.reset()

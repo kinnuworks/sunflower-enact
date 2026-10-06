@@ -25,6 +25,8 @@ type ClusterState struct {
 	Events      []EventView  `json:"events"`
 	// Receipts is Sunflower's own log of actions, newest last.
 	Receipts json.RawMessage `json:"receipts,omitempty"`
+	// GridTime is the data timestamp the grid replay is currently publishing, if one is attached.
+	GridTime string `json:"gridTime,omitempty"`
 }
 
 type NodeView struct {
@@ -71,8 +73,10 @@ type clusterWatcher struct {
 	client    *http.Client
 	namespace string
 	receipts  string // URL of Sunflower's /receipts, optional
+	grid      string // base URL of the grid replay, optional
 	// onPoll, when set, is called after each successful poll with the seconds since the last one.
 	onPoll func(ClusterState, float64)
+	plain  *http.Client // for in-cluster HTTP services, which need no Kubernetes credentials
 
 	mu    sync.Mutex
 	state ClusterState
@@ -81,8 +85,8 @@ type clusterWatcher struct {
 const saDir = "/var/run/secrets/kubernetes.io/serviceaccount"
 
 func newClusterWatcher() *clusterWatcher {
-	w := &clusterWatcher{namespace: env("WITNESS_NAMESPACE", "enact"), receipts: os.Getenv("WITNESS_RECEIPTS"),
-		client: &http.Client{Timeout: 4 * time.Second}}
+	w := &clusterWatcher{namespace: env("WITNESS_NAMESPACE", "enact"), receipts: os.Getenv("WITNESS_RECEIPTS"), grid: os.Getenv("WITNESS_GRID"),
+		client: &http.Client{Timeout: 4 * time.Second}, plain: &http.Client{Timeout: 2 * time.Second}}
 	if api := os.Getenv("KUBE_API"); api != "" {
 		w.base = api
 		return w
@@ -292,6 +296,17 @@ func (w *clusterWatcher) poll(ctx context.Context) (ClusterState, error) {
 		sort.Slice(st.Events, func(i, j int) bool { return st.Events[i].Time > st.Events[j].Time })
 		if len(st.Events) > 30 {
 			st.Events = st.Events[:30]
+		}
+	}
+	if w.grid != "" {
+		if resp, err := w.plain.Get(w.grid + "/state"); err == nil {
+			var g struct {
+				DataTime string `json:"dataTime"`
+			}
+			if json.NewDecoder(resp.Body).Decode(&g) == nil && resp.StatusCode == http.StatusOK {
+				st.GridTime = g.DataTime
+			}
+			resp.Body.Close()
 		}
 	}
 	if w.receipts != "" {

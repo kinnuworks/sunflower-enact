@@ -1,0 +1,18 @@
+apiVersion: enact.eu/v1alpha1
+kind: RuntimePolicy
+metadata:
+  name: greencharge-ai
+  namespace: default
+spec:
+  location:
+    mode: Hard
+    regions:
+      - us-west-2
+    zones:
+      - us-west-2a
+  greenEnergy:
+    minRatio: 0.9
+  aiCompliance:
+    frameworks:
+      - EU-AI-Act
+    riskTier: High

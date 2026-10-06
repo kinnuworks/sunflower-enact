@@ -1,0 +1,19 @@
+apiVersion: enact.eu/v1alpha1
+kind: RuntimePolicy
+metadata:
+  name: greencharge-ai
+  namespace: enact
+spec:
+  availability:
+    nodeAvailability: 0.9
+  location:
+    regions:
+      - eu-west
+  greenEnergy:
+    minRatio: 0.6
+    mode: Soft
+  cpu:
+    min: 1
+    max: 4
+  memory:
+    max: 2048
