@@ -1,0 +1,26 @@
+# GreenCharge - ENACT Application Policy Model.
+#
+# Read by the Application Controller's PolicyModelConfig. Keys are snake_case because that
+# is what the 1.0.0 loader reads; a camelCase key is dropped without an error.
+application:
+  performance:
+    cpu:
+      family: "x86_64"
+      cores:
+        min: 1
+        max: 4
+    ram:
+      capacity: "2Gi"
+      timings: "DDR4"
+  data_storage:
+    # Placement: the model has no region field, so the target region is carried here.
+    locations:
+      - "eu-west"
+  network:
+    capacity:
+      # The compliance service reports "error" unless both of these are present.
+      bandwidth: "100Mbps"
+      latency: "50ms"
+  energy:
+    consumption: "100W"
+    green_energy_mix: 0.60

@@ -31,10 +31,42 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--
+          ENACT Application Controller. GreenCharge uses its policy-model reconciler only
+          (PolicyModelConfig + ComplianceAndAdaptationService), imported explicitly in
+          AdaptationConfig. The library declares ~100 transitive dependencies (Spring
+          Security, JPA, Redis, Kafka, Flink, ...) that the reconciler does not need; pulled
+          in as-is they put a login wall on every endpoint and produce a 376 MB jar, so they
+          are excluded here. See docs/field-report.md.
+        -->
         <dependency>
             <groupId>eu.enact-horizon</groupId>
             <artifactId>application-controller</artifactId>
             <version>1.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- PolicyModelConfig uses javax.annotation.PostConstruct; Spring only honours it when this API is present. -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
     </dependencies>
 
