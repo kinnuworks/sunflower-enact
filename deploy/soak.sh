@@ -37,7 +37,10 @@ state = json.load(urllib.request.urlopen("http://localhost:35590/api/state"))
 moved = [r for r in json.loads(json.dumps(state["cluster"].get("receipts") or [])) if r["kind"] == "Moved" and r["time"] >= start]
 durs = sorted(round(r["seconds"], 2) for r in moved)
 pick = lambda q: durs[min(len(durs)-1, int(len(durs)*q))] if durs else None
+import os
 result = {"started": start, "movesRequested": n, "movesCompleted": len(durs),
+          "hostLoadAverage": os.getloadavg()[0],
+          "failures": state.get("failures", []),
           "moveSeconds": {"min": durs[0] if durs else None, "median": pick(0.5), "p95": pick(0.95), "max": durs[-1] if durs else None},
           "traffic": sorted(state["totals"], key=lambda t: t["target"])}
 json.dump(result, open(out, "w"), indent=2)

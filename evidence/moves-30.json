@@ -1,0 +1,48 @@
+{
+  "started": "2026-10-06T19:51:23Z",
+  "movesRequested": 30,
+  "movesCompleted": 32,
+  "hostLoadAverage": 9.60400390625,
+  "failures": [],
+  "moveSeconds": {
+    "min": 5.59,
+    "median": 8.83,
+    "p95": 13.05,
+    "max": 15.34
+  },
+  "traffic": [
+    {
+      "target": "standard",
+      "requests": 2632,
+      "failed": 0,
+      "slow": 69,
+      "byNode": {
+        "enact-dev-worker": 2632
+      },
+      "lastNode": "enact-dev-worker",
+      "p50Ms": 2.263,
+      "p95Ms": 25.52,
+      "outOfPolicySeconds": 265.91215172100016,
+      "violating": false,
+      "greenRatio": 0.85,
+      "greenMin": 0.6
+    },
+    {
+      "target": "sunflower",
+      "requests": 2632,
+      "failed": 0,
+      "slow": 157,
+      "byNode": {
+        "enact-dev-worker": 1355,
+        "enact-dev-worker2": 1277
+      },
+      "lastNode": "enact-dev-worker",
+      "p50Ms": 5.496,
+      "p95Ms": 57.848,
+      "outOfPolicySeconds": 410.51955507500014,
+      "violating": false,
+      "greenRatio": 0.85,
+      "greenMin": 0.6
+    }
+  ]
+}

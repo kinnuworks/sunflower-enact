@@ -70,6 +70,7 @@ type hub struct {
 	totals    map[string]*Totals
 	latencies map[string][]float64
 	recent    []Sample
+	failures  []Sample // every failed request since the last reset, capped
 	subs      map[chan []byte]struct{}
 	slowMs    float64
 	out       io.Writer
@@ -98,6 +99,9 @@ func (h *hub) record(s Sample) {
 	t.Requests++
 	if !s.OK {
 		t.Failed++
+		if len(h.failures) < 500 {
+			h.failures = append(h.failures, s)
+		}
 	} else {
 		if s.LatencyMs > h.slowMs {
 			t.Slow++
@@ -120,6 +124,12 @@ func (h *hub) record(s Sample) {
 		}
 	}
 	h.mu.Unlock()
+}
+
+func (h *hub) failed() []Sample {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return append([]Sample{}, h.failures...)
 }
 
 func (h *hub) snapshot() (totals []Totals, recent []Sample) {
@@ -169,6 +179,7 @@ func (h *hub) reset() {
 	h.totals = map[string]*Totals{}
 	h.latencies = map[string][]float64{}
 	h.recent = nil
+	h.failures = nil
 	h.mu.Unlock()
 }
 
@@ -337,7 +348,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/state", func(w http.ResponseWriter, r *http.Request) {
 		totals, recent := h.snapshot()
-		writeJSON(w, map[string]any{"totals": totals, "recent": recent, "cluster": cluster.snapshot(), "slowMs": *slowMs})
+		writeJSON(w, map[string]any{"totals": totals, "recent": recent, "cluster": cluster.snapshot(), "slowMs": *slowMs, "failures": h.failed()})
 	})
 	mux.HandleFunc("POST /api/reset", func(w http.ResponseWriter, r *http.Request) {
 		h.reset()

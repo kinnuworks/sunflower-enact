@@ -1,0 +1,22 @@
+apiVersion: enact.eu/v1alpha1
+kind: RuntimePolicy
+metadata:
+  name: greencharge
+  namespace: enact
+spec:
+  availability:
+    requireReady: true
+    nodeAvailability: 0.9
+  location:
+    mode: Hard
+    regions:
+      - eu-west
+  greenEnergy:
+    minRatio: 0.6
+    mode: Soft
+  cpu:
+    min: 1
+    max: 4
+  memory:
+    min: 2048
+    max: 2048

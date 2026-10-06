@@ -63,16 +63,26 @@ Sunflower treats an empty choice as "no decision" and leaves the app where it is
 
 ## What Sunflower does on this platform (measured)
 
-From `deploy/soak.sh` on 2026-10-06, 5 requests per second to each copy:
+From `deploy/soak.sh`, 5 requests per second to each copy, on 2026-10-06 and 2026-10-07:
 
 | Measure | Result |
 |---|---|
-| Forced moves | 20 of 20 completed |
-| Requests to the moving copy during the run | 1,389, of which 0 failed |
-| Time per move (new pod ready, old pod gone) | median 4.8 s, slowest 14.7 s |
-| Standard build over the same period | 1,389 requests, 0 failed, never left its first node |
+| Forced moves | 30 of 30 completed |
+| Requests to the moving copy during the run | 2,632, of which 0 failed |
+| Time per move (new pod ready, old pod gone) | median 8.8 s, slowest 15.3 s |
+| Standard build over the same period | 2,632 requests, 0 failed, never left its first node |
 
-Raw data: `evidence/moves-20.json`.
+Raw data: `evidence/moves-30.json`. An earlier run on a quieter machine (`evidence/moves-20.json`)
+gave a median of 4.8 s per move; move time follows how busy the host is.
+
+One run is deliberately not reported as a result: while Eclipse was being installed on the
+same laptop, both copies saw failed requests, including the standard build, which never
+moves. Failures on a copy that never moves measure the host, not the mover.
+
+A live scene between those two runs did show one request lost just after a move: a client
+reused a keep-alive connection to the old pod as it exited. GreenCharge now tells clients to
+close their connection while it drains (`PlacementInfo.drain`), and the 30-move run above was
+made after that change.
 
 Two failure cases were also exercised:
 
