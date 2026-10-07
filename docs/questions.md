@@ -54,9 +54,12 @@ a setting. At zero the total would be about four seconds, and it would then move
 short dip.
 
 **Why 48 seconds and 12? Those are small.**
-They are replayed seconds. Half an hour of grid data passes every four seconds, so 48 seconds
-on screen is six hours of the real day, against an hour and a half. The screen says so under
-each timer.
+They are replayed seconds. Half an hour of grid data passes every four seconds, so the
+standard build's 48 seconds are six hours of the real day. Sunflower's 12 seconds do not
+scale the same way, because its wait and its move take the same time at any speed. With the
+default 20-second wait and the 3.5-second move we measured, that is about 24 seconds, plus up
+to a minute for ENACT to change its pick. The screen shows both real-speed figures under the
+timers. The six hours follow from the data; the 24 seconds are worked out, not yet run.
 
 **Did you do the dataspace step?**
 Not yet. The plug-in asks for a connector address and key that are not in the challenge

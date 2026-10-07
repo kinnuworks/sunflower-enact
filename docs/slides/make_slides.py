@@ -86,7 +86,7 @@ add_image_rel(3, 'race.png'); save(3, x)
 x = slide(4)
 CW = 2700000; X0 = 311700; GAP = 210300; Y = 1180000
 stats = [('0', 'requests lost', 'across 30 moves in a row, 1,777 requests, on the challenge cluster'),
-         ('48 → 12 s', 'on dirty power', 'standard build against Sunflower, over a real day of British grid data: 6 hours against 1.5'),
+         ('48 → 12 s', 'on dirty power', 'in the replay. At real speed: 6 hours for the standard build, about 24 seconds with Sunflower'),
          ('39', 'findings given back', 'problems we hit in ENACT, each written up with the fix we used')]
 shapes = []
 for k, (big, label, small) in enumerate(stats):
@@ -96,7 +96,7 @@ for k, (big, label, small) in enumerate(stats):
         para([run(label, sz=1400, b=True, color=INK)], after=200, line=100),
         para([run(small, sz=1050, color=SOFT)], after=0, line=108)]))
 x = set_body(x, [
-    para([run('Where the 12 s go: ', sz=1200, b=True), run('8 s is a deliberate wait to be sure the drop is real (a setting), and 3.5 s is the move. Both copies answer every request throughout.', sz=1200)], bullet=True, after=300),
+    para([run('Where the 12 s go: ', sz=1200, b=True), run('8 s is a deliberate wait to be sure the drop is real, and 3.5 s is the move. Neither stretches with the day, so at real speed (default wait 20 s) Sunflower is on dirty power for about 24 seconds while the standard build sits through 6 hours.', sz=1200)], bullet=True, after=300),
     para([run('Checklist done in the ENACT SDK: ', sz=1200, b=True), run('policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the SDK’s assistant. The repo has a screenshot of every step.', sz=1200)], bullet=True, after=300),
     para([run('ENACT stays in charge: ', sz=1200, b=True), run('Sunflower reads the policy’s chosen machine and has no ranking of its own. It waits out short dips, ignores near-ties, limits how often it moves, and undoes a move that fails.', sz=1200)], bullet=True, after=300),
     para([run('Still open: ', sz=1200, b=True), run('the dataspace step, which needs connector details we have asked the mentors for. We make no carbon-saving claim. We report time on dirty power, which we measured.', sz=1200)], bullet=True, after=0),

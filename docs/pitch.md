@@ -59,8 +59,10 @@ closed.
 *(let it run to about 1:15, then talk over the rest)*
 
 > By the end of the day's data, the standard build has spent forty-eight seconds on dirty
-> power and Sunflower about twelve. In real time that is six hours against an hour and a
-> half.
+> power and Sunflower twelve. That is the replay, which runs the day four hundred and fifty
+> times faster. At real speed the left side is six hours. The right side is about twenty-four
+> seconds, because Sunflower's wait and its move take the same time however slowly the grid
+> changes.
 
 ## 3:00 to 3:50, why it is safe (stay on the screen)
 

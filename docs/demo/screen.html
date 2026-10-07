@@ -152,6 +152,7 @@ const mmss = (sec) => { sec = Math.round(sec); return Math.floor(sec / 60) + ':'
 const hhmm = (d) => String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
 // The controller's kinds of log entry, as a person would say them.
 const DID = { Placed: 'Started', Holding: 'Stayed', Watching: 'Waiting', Moving: 'Moving', Moved: 'Moved', Aborted: 'Undid a move', WouldMove: 'Would move', Ignored: 'Ignored' };
+const REAL_WAIT = 20;  // seconds: Sunflower's default --settle, which the replay shortens to 8
 const FLOWER = `<svg viewBox="0 0 60 60" aria-hidden="true"><g fill="#f5c84b" stroke="#20302a" stroke-width="2">${Array.from({ length: 10 }, (_, i) => `<ellipse cx="30" cy="11" rx="6" ry="10" transform="rotate(${i * 36} 30 30)"/>`).join('')}</g><circle cx="30" cy="30" r="11" fill="#20302a"/></svg>`;
 
 $('petals').innerHTML = Array.from({ length: 12 }, (_, i) => `<ellipse cx="30" cy="10" rx="5.2" ry="9.5" transform="rotate(${i * 30} 30 30)"/>`).join('');
@@ -273,8 +274,14 @@ function render(doc, P) {
     const B = buildAt(doc, b.id, P, min, machines);
     const W = { pc: V.pc, barPx: ($(b.id + '-bar').clientWidth || 500) };
     $(b.id + '-time').textContent = mmss(B.dirty);
-    const realMin = doc.grid ? B.dirty / doc.grid.stepSeconds * doc.grid.stepMinutes : 0;  // what those seconds were in the day being replayed
-    $(b.id + '-real').textContent = realMin < 20 ? '' : `, about ${realMin >= 90 ? (Math.round(realMin / 30) / 2).toLocaleString('en-GB') + ' hours' : Math.round(realMin / 10) * 10 + ' minutes'} of the real day`;
+    // What that time would be at real speed. A dirty stretch lasts as long as the grid makes it,
+    // so for a copy that sits through it the replayed seconds scale back up to hours. Sunflower's
+    // wait and move do not stretch with the day: at real speed it would wait its default
+    // REAL_WAIT seconds and then move in the time it actually took here.
+    const realMin = doc.grid ? B.dirty / doc.grid.stepSeconds * doc.grid.stepMinutes : 0;
+    const moveDone = b.id === 'sunflower' ? notes.filter((r) => r.kind === 'Moved' && r.seconds).slice(-1)[0] : null;
+    $(b.id + '-real').textContent = moveDone ? `, about ${Math.round(REAL_WAIT + moveDone.seconds)} seconds at real speed`
+      : realMin < 20 ? '' : `, ${realMin >= 90 ? (Math.round(realMin / 30) / 2).toLocaleString('en-GB') + ' hours' : 'about ' + Math.round(realMin / 10) * 10 + ' minutes'} at real speed`;
     const said = stepAtMark((doc.tl.advice || {})[b.id], P);
     $(b.id + '-check').innerHTML = !said ? '' : said.action === 'no_action' ? 'Its own Application Controller check: <b>within policy</b>'
       : said.action === 'relocate' ? 'Its own Application Controller check: <b>relocate</b>, this machine is below the policy’s green mix'

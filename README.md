@@ -15,7 +15,8 @@ which is where the name comes from.
 
 | | Standard build | With Sunflower |
 |---|---|---|
-| Time on dirty power | 48 s, about 6 hours of the real day | 12 s, about 1.5 hours |
+| Time on dirty power, in the replay | 48 s | 12 s, a quarter of that |
+| The same at real speed | 6 hours | about 24 seconds |
 | Requests lost | 0 of 507 | 0 of 507 |
 | When Machine A fell below 60% green | stayed on it | moved to Machine B in 3.5 s |
 | What the app's own Application Controller check said | `relocate`, for 48 s | `relocate`, for 12 s |
@@ -23,6 +24,13 @@ which is where the name comes from.
 Of Sunflower's 12 seconds, 8 are a deliberate wait to be sure the drop is real, and 3.5 are the
 move: start a second copy on Machine B, let it warm up, switch the traffic, stop the first.
 Both copies answer every request the whole time. The wait is a setting (`--settle`).
+
+At real speed the gap is far wider than four to one. The replay squeezes the day 450 times,
+so the standard build's 48 seconds stand for the 6 hours Machine A's grid stayed below 60%.
+Sunflower's wait and move do not stretch with the day. With its default 20-second wait and
+the 3.5-second move we measured, it would be on dirty power for about 24 seconds, plus however
+long ENACT takes to change its pick, which was up to about a minute in our tests. That second
+figure is worked out from the measurements; the replay figures are measured directly.
 
 The run is saved as measured in [`docs/demo/run.json`](docs/demo/run.json). To watch it play back:
 
@@ -154,8 +162,8 @@ Limits we know about:
 - The three machines are containers on one laptop. Their green share is assigned from real
   regional grid data. It is not measured at the machine.
 - The grid data is unedited but replayed 450 times faster than it happened, and the waiting
-  times are shortened to match: 8 s to be sure, 30 s between moves. The defaults are 20 s and
-  60 s, and on a live grid they would be minutes.
+  times are shortened for it: 8 s to be sure, 30 s between moves. The defaults are 20 s and
+  60 s. We have not run a full day at real speed.
 - We make no carbon claim. The energy figures this cluster reports are model estimates inside
   a virtual machine, nearly equal for every node, so we report time on dirty power, which we
   can measure.
