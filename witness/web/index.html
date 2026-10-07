@@ -86,6 +86,7 @@
   .latest .earlier { color: var(--quiet); }
   .latest time { color: var(--quiet); }
   .latest span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .latest span.quiet { white-space: normal; }  /* an instruction must be readable in full */
   .latest b { font-weight: 700; }
   @media (max-height: 860px) { .latest .earlier { display: none; } }
   footer { margin-top: 8px; font-size: 12.5px; color: var(--quiet); }
@@ -111,7 +112,7 @@
       <div class="note" id="note"></div>
       <div class="controls" id="controls">
         <button id="play" class="go">Play the day</button>
-        <button id="rewind">Rewind</button>
+        <button id="rewind">Rewind the clock</button>
         <button id="dip">Dip the power for 5 seconds</button>
       </div>
     </div>
@@ -289,7 +290,7 @@ function render(doc, P) {
     const moving = b.id === 'sunflower' && last && last.kind === 'Moving', waiting = b.id === 'sunflower' && last && last.kind === 'Watching';
     $(b.id + '-now').innerHTML = !B.machine ? 'Starting up' : moving ? 'Moving to the machine ENACT picked'
       : `<i class="dot" style="background:var(--${B.clean ? 'clean' : 'dirty'})"></i>Now on <b>Machine ${B.machine.letter}</b>, on ${B.clean ? 'clean' : 'dirty'} power${waiting ? '. Waiting to be sure it lasts' : ''}`;
-    $(b.id + '-requests').innerHTML = `${B.sent.toLocaleString('en-GB')} requests, <b class="${B.lost ? 'some' : ''}">${B.lost} lost</b>`;
+    $(b.id + '-requests').innerHTML = doc.waiting ? `Answering ${doc.rate} requests a second` : `${B.sent.toLocaleString('en-GB')} requests, <b class="${B.lost ? 'some' : ''}">${B.lost} lost</b>`;
   }
 
   const plain = (msg) => { for (const m of Object.values(machines).sort((a, b) => b.name.length - a.name.length)) msg = msg.split(m.name).join('Machine ' + m.letter);
@@ -299,13 +300,13 @@ function render(doc, P) {
   const news = notes.filter((r, i) => !passing.includes(r.kind) || (i === notes.length - 1 && r.kind !== 'Placing')).slice(-3).reverse();
   $('latest').innerHTML = `<div class="head">What Sunflower did, and why</div>` + (news.length
     ? news.map((r, i) => `<time class="${i ? 'earlier' : ''}">${clock ? hhmm(clock.timeAt(r.t)) : mmss(r.t)}</time><b class="${i ? 'earlier' : ''}">${esc(DID[r.kind] || r.kind)}</b><span class="${i ? 'earlier' : ''}" title="${esc(plain(r.message))}">${esc(plain(r.message))}</span>`).join('')
-    : `<time></time><b></b><span class="quiet">${doc.recorded ? 'Nothing yet in this recording.' : 'Nothing to report yet. Press “Play the day” and watch the panel on the right.'}</span>`);
+    : `<time></time><b></b><span class="quiet">${doc.recorded ? 'Nothing yet in this recording.' : doc.uneven ? 'The two copies are on different machines, so the comparison would not start level. Run ./deploy/scene.sh in a terminal, then press “Play the day”.' : 'Both copies are up and answering. Press “Play the day” and watch the panel on the right.'}</span>`);
 
   if (doc.grid) {
     const d = clock ? clock.timeAt(P) : new Date(doc.grid.dataTime);
     $('when').textContent = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) + ', ' + hhmm(d);
     $('note').textContent = `Real British grid data. ${doc.grid.stepMinutes} minutes pass every ${doc.grid.stepSeconds} seconds.`;
-    $('foot').textContent = `Grid data: ${doc.grid.source}, ${doc.grid.licence}. Requests are real: ${Math.round((buildAt(doc, 'standard', P, min, machines).sent || 0) / Math.max(1, P))} a second to each copy. One counts as lost after 2 seconds without an answer.`;
+    $('foot').textContent = `Grid data: ${doc.grid.source}, ${doc.grid.licence}. Requests are real: ${doc.rate || Math.round((buildAt(doc, 'standard', P, min, machines).sent || 0) / Math.max(1, P))} a second to each copy. One counts as lost after 2 seconds without an answer.`;
   } else { $('when').textContent = 'Live cluster'; $('note').textContent = 'No grid replay is attached, so the clock is the wall clock.'; }
 }
 
@@ -323,13 +324,24 @@ async function live() {
   const pol = (state.cluster.policies || []).find((p) => p.greenMin != null);
   const doc = { tl, receipts: state.cluster.receipts || [], greenMin: pol ? pol.greenMin : 0.6, zones, dips,
     grid: grid && { source: grid.source, licence: grid.licence, stepMinutes: grid.stepMinutes, stepSeconds: grid.stepSeconds, length: grid.length, dataTime: grid.dataTime } };
-  current = { doc, P: tl.seconds }; window.__doc = doc; window.__grid = grid;
+  // The traffic never stops, but the scoreboard covers the day only: it waits at the start
+  // until the day is played, and stops where the day's data stops.
+  let P = tl.seconds; const clock = dataClock(doc);
+  if (grid && !grid.playing && grid.index === 0) P = Math.min(P, 1);
+  else if (grid && clock && !grid.playing && grid.index >= grid.length - 1) P = Math.min(P, clock.end);
+  doc.waiting = !!(grid && !grid.playing && grid.index === 0);
+  const all = tl.requests.standard || []; doc.rate = all.length > 10 ? Math.round(all.length / Math.max(1, tl.seconds)) : 5;
+  current = { doc, P }; window.__doc = doc; window.__grid = grid;
   if (grid) {
     const over = !grid.playing && grid.index >= grid.length - 1;
-    $('play').textContent = grid.playing ? 'Pause' : (over ? 'The day is over' : 'Play the day');
-    $('play').disabled = over;
     const first = (tl.marks || [])[0], machines = machinesOf(doc), here = buildAt(doc, 'sunflower', tl.seconds, doc.greenMin, machines).machine;
-    $('rewind').textContent = first && grid.index > 0 ? `Rewind to ${hhmm(new Date(Date.parse(first.data)))}` : 'Rewind';
+    // A fair comparison starts with both copies on the same machine. After a day has been played
+    // they are not, and only deploy/scene.sh puts them back, so Play waits for that.
+    const there = buildAt(doc, 'standard', tl.seconds, doc.greenMin, machines).machine;
+    doc.uneven = doc.waiting && !!here && !!there && here !== there;
+    $('play').textContent = grid.playing ? 'Pause' : over ? 'The day is over' : doc.uneven ? 'Set the stage first' : 'Play the day';
+    $('play').disabled = over || doc.uneven;
+    $('rewind').textContent = first && grid.index > 0 ? `Rewind the clock to ${hhmm(new Date(Date.parse(first.data)))}` : 'Rewind the clock';
     $('dip').textContent = here ? `Dip Machine ${here.letter}’s power for 5 seconds` : 'Dip the power for 5 seconds';
   }
   redraw();
