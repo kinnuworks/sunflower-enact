@@ -63,9 +63,9 @@
   .build { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 28px 14px; }
   .build h2 { font-size: 26px; font-weight: 800; }
   .build .what { margin: 3px 0 0; font-size: 16px; color: var(--quiet); }
-  .build .time { margin-top: 10px; font-size: 66px; font-weight: 800; line-height: .95; letter-spacing: -0.02em; }
+  .build .time { margin-top: 10px; font-size: 62px; font-weight: 800; line-height: .95; letter-spacing: -0.02em; white-space: nowrap; }
   .build .cap { font-size: 17px; margin-top: 2px; }
-  .build .real { color: var(--quiet); }
+  .build .replay { font-size: 14.5px; color: var(--quiet); margin-top: 1px; min-height: 21px; }
   .build .ran { margin-top: 12px; }
   .build .ran .label { font-size: 14.5px; color: var(--quiet); margin-bottom: 5px; }
   .build .bar { height: 42px; border-radius: 10px; }
@@ -160,8 +160,9 @@ $('petals').innerHTML = Array.from({ length: 12 }, (_, i) => `<ellipse cx="30" c
 for (const b of BUILDS) {
   $('build-' + b.id).innerHTML = `
     <h2>${b.title}</h2><p class="what">${b.what}</p>
-    <div class="time" id="${b.id}-time">0:00</div><div class="cap">on dirty power<span class="real" id="${b.id}-real"></span></div>
-    <div class="ran"><div class="label">Where it ran</div>
+    <div class="time" id="${b.id}-time">0 seconds</div><div class="cap" id="${b.id}-cap">on dirty power, at real speed</div>
+    <div class="replay" id="${b.id}-replay"></div>
+    <div class="ran">
       <div class="bar" id="${b.id}-bar" role="img"></div>
       <div class="flag" id="${b.id}-flag"></div></div>
     <div class="facts"><span id="${b.id}-now"></span><span id="${b.id}-requests"></span></div>
@@ -261,10 +262,13 @@ function render(doc, P) {
   $('strips').innerHTML = rows.join('');
   if (clock) {
     const pxPerHour = V.barPx / domain * doc.grid.stepSeconds * 60 / doc.grid.stepMinutes;
-    const every = [1, 2, 3, 4, 6, 12].find((n) => n * pxPerHour >= 96) || 24; let html = '';
+    const every = [1, 2, 3, 4, 6, 12].find((n) => n * pxPerHour >= 96) || 24; let html = '', clear = 0;
     for (let i = 0; i < clock.count; i++) { const d = new Date(clock.first + i * clock.stepMs);
       if (i && !(d.getUTCMinutes() === 0 && d.getUTCHours() % every === 0)) continue;
       if (V.pc(clock.at(i)) > 97) break;
+      const px = V.pc(clock.at(i)) / 100 * V.barPx;   // the first label is long and left-aligned
+      if (i && px - 22 < clear) continue;
+      clear = i ? px + 22 : 118;
       html += `<span style="left:${V.pc(clock.at(i))}%">${i ? hhmm(d) : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }) + ', ' + hhmm(d)}</span>`; }
     $('hours').innerHTML = html;
   }
@@ -274,25 +278,33 @@ function render(doc, P) {
   for (const b of BUILDS) {
     const B = buildAt(doc, b.id, P, min, machines);
     const W = { pc: V.pc, barPx: ($(b.id + '-bar').clientWidth || 500) };
-    $(b.id + '-time').textContent = mmss(B.dirty);
-    // What that time would be at real speed. A dirty stretch lasts as long as the grid makes it,
-    // so for a copy that sits through it the replayed seconds scale back up to hours. Sunflower's
-    // wait and move do not stretch with the day: at real speed it would wait its default
-    // REAL_WAIT seconds and then move in the time it actually took here.
-    const realMin = doc.grid ? B.dirty / doc.grid.stepSeconds * doc.grid.stepMinutes : 0;
-    // Sunflower's time on dirty power has three parts, each measured from its log: how long
-    // ENACT took to name another machine after the power turned dirty, Sunflower's own wait
-    // to be sure, and the move. Only the wait is shortened for the replay.
-    let parts = null;
-    if (b.id === 'sunflower') {
-      const done = notes.filter((r) => r.kind === 'Moved' && r.seconds).slice(-1)[0];
-      const start = done && notes.filter((r) => r.kind === 'Moving' && r.t <= done.t).slice(-1)[0];
-      const watch = start && notes.filter((r) => r.kind === 'Watching' && r.t <= start.t).slice(-1)[0];
-      const span = watch && B.spans.filter((s) => s[0] <= watch.t + 1).slice(-1)[0];
-      if (done) parts = { done, pick: span ? Math.max(0, watch.t - span[0]) : 0, wait: watch ? start.t - watch.t : 0, move: done.seconds };
+    // The headline is time on dirty power at real speed. The replay runs the day `speedup`
+    // times faster, and the two builds do not scale the same way. A build that sits through a
+    // dirty stretch is there for as long as the grid makes it, so its replayed seconds scale
+    // back up to hours. Sunflower's time has three parts, each read from its own log: how long
+    // ENACT took to name another machine (the same at any speed), Sunflower's wait to be sure
+    // (REAL_WAIT seconds by default, shortened for the replay), and the move (the same at any
+    // speed). So its figure is worked out from measured parts, and counts up as they happen.
+    const speedup = doc.grid ? doc.grid.stepMinutes * 60 / doc.grid.stepSeconds : 1;
+    let real = B.dirty * speedup, parts = null, why = '';
+    if (b.id === 'sunflower' && B.spans.length) {
+      const span = B.spans[B.spans.length - 1];
+      const watch = notes.filter((r) => r.kind === 'Watching' && r.t >= span[0] - 1).slice(-1)[0];
+      const start = watch && notes.filter((r) => r.kind === 'Moving' && r.t >= watch.t).slice(-1)[0];
+      const done = start && notes.filter((r) => r.kind === 'Moved' && r.seconds && r.t >= start.t).slice(-1)[0];
+      if (watch) {
+        const said = /Waiting (\d+(?:\.\d+)?)s/.exec(watch.message || ''), settle = start ? start.t - watch.t : said ? +said[1] : 8;
+        const pick = Math.max(0, watch.t - span[0]), waited = (start ? start.t : Math.min(P, span[1])) - watch.t;
+        const moved = done ? done.seconds : start ? Math.max(0, P - start.t) : 0;
+        real = pick + Math.min(1, waited / Math.max(1, settle)) * REAL_WAIT + moved;
+        if (done) parts = { done, pick, wait: start.t - watch.t, move: done.seconds };
+        why = `. Its ${REAL_WAIT} s wait and its move do not stretch with the day`;
+      }
     }
-    $(b.id + '-real').textContent = parts ? `, about ${Math.round(parts.pick + REAL_WAIT + parts.move)} seconds at real speed`
-      : realMin < 20 ? '' : `, ${realMin >= 90 ? (Math.round(realMin / 30) / 2).toLocaleString('en-GB') + ' hours' : 'about ' + Math.round(realMin / 10) * 10 + ' minutes'} at real speed`;
+    const spoken = (sec) => sec < 90 ? `${Math.round(sec)} seconds` : sec < 5400 ? `${Math.round(sec / 60)} minutes` : `${(Math.round(sec / 1800) / 2).toLocaleString('en-GB')} hours`;
+    $(b.id + '-time').textContent = spoken(real);
+    $(b.id + '-cap').textContent = why ? 'on dirty power at real speed, worked out from its log' : 'on dirty power, at real speed';
+    $(b.id + '-replay').textContent = doc.waiting || !doc.grid ? '' : why ? `${mmss(B.dirty)} in this replay${why}` : `${mmss(B.dirty)} in this replay, which runs the day ${Math.round(speedup)} times faster`;
     const said = stepAtMark((doc.tl.advice || {})[b.id], P);
     $(b.id + '-check').innerHTML = !said ? '' : said.action === 'no_action' ? 'Its own Application Controller check: <b>within policy</b>'
       : said.action === 'relocate' ? 'Its own Application Controller check: <b>relocate</b>, this machine is below the policy’s green mix'

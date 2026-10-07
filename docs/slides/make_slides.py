@@ -79,14 +79,14 @@ x = set_body(x, [
 ], xfrm=(311700, 1152475, 3830000, 3416400))
 x = add(x, [pic(201, 'rId9', 4352000, 1235000, PW, PH, 'Two copies of GreenCharge over one replayed day of grid data: the standard build stays on Machine A, the copy with Sunflower moves to Machine B.'),
             box(202, 'Caption', 4352000, 1235000 + PH + 70000, PW, 420000,
-                [para([run('One real run on the challenge cluster. Left: the standard build, 48 s on dirty power. Right: with Sunflower, 12 s. Each was sent 507 requests and lost none.', sz=950, color=SOFT)], after=0, line=105)])])
+                [para([run('One real run on the challenge cluster. Left: the standard build, 6 hours on dirty power at real speed. Right: with Sunflower, about 24 seconds. Each was sent 507 requests and lost none.', sz=950, color=SOFT)], after=0, line=105)])])
 add_image_rel(3, 'race.png'); save(3, x)
 
 # 4. highlights: three numbers, then what stands behind them
 x = slide(4)
 CW = 2700000; X0 = 311700; GAP = 210300; Y = 1180000
 stats = [('0', 'requests lost', 'across 30 moves in a row, 1,777 requests, on the challenge cluster'),
-         ('48 → 12 s', 'on dirty power', 'in the replay. At real speed: 6 hours for the standard build, about 24 seconds with Sunflower'),
+         ('6 h → 24 s', 'on dirty power, at real speed', 'standard build against Sunflower, over a real day of British grid data'),
          ('45', 'findings given back', 'problems we hit in ENACT, each written up with the fix we used')]
 shapes = []
 for k, (big, label, small) in enumerate(stats):
@@ -96,7 +96,7 @@ for k, (big, label, small) in enumerate(stats):
         para([run(label, sz=1400, b=True, color=INK)], after=200, line=100),
         para([run(small, sz=1050, color=SOFT)], after=0, line=108)]))
 x = set_body(x, [
-    para([run('Where the 12 s go: ', sz=1200, b=True), run('8 s is a deliberate wait to be sure the drop is real, and 3.5 s is the move. Neither stretches with the day, so at real speed (default wait 20 s) Sunflower is on dirty power for about 24 seconds while the standard build sits through 6 hours.', sz=1200)], bullet=True, after=300),
+    para([run('How we get 6 hours against 24 seconds: ', sz=1200, b=True), run('our replay runs the day 450 times faster and shows 48 s against 12 s. The standard build’s 48 s are the whole dirty stretch, which is 6 hours at real speed. Sunflower’s 12 s are a wait and a 3.5 s move that do not stretch with the day: with its default 20 s wait, about 24 seconds.', sz=1200)], bullet=True, after=300),
     para([run('Checklist done in the ENACT SDK: ', sz=1200, b=True), run('dataspace feed, policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the SDK’s assistant. The repo has a screenshot of every step.', sz=1200)], bullet=True, after=300),
     para([run('ENACT stays in charge: ', sz=1200, b=True), run('Sunflower reads the policy’s chosen machine and has no ranking of its own. It waits out short dips, ignores near-ties, limits how often it moves, and undoes a move that fails.', sz=1200)], bullet=True, after=300),
     para([run('What we do not claim: ', sz=1200, b=True), run('carbon saved. This cluster reports energy as a model estimate, so we report time on dirty power, which we measured.', sz=1200)], bullet=True, after=0),

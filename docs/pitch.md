@@ -37,7 +37,7 @@ version, the longer one below is background for questions.
 
 *(Machine A turns grey)*
 
-> Now Machine A is dirty. Both timers are running. Sunflower waits eight seconds, to be sure.
+> Now Machine A is dirty. Both numbers start counting. Sunflower waits eight seconds, to be sure.
 
 *(the right-hand bar shows Machine B)*
 
@@ -45,8 +45,9 @@ version, the longer one below is background for questions.
 
 *(let the day finish)*
 
-> Left: forty-eight seconds on dirty power. Right: twelve.
-> At real speed, that is six hours against twenty-four seconds.
+> Left: six hours on dirty power. Right: twenty-four seconds.
+> Those are real speed. The small numbers under them, forty-eight seconds and twelve, are
+> this fast replay.
 >
 > Sunflower never picks the machine. ENACT does. Sunflower follows it, carefully.
 
@@ -91,10 +92,10 @@ version, the longer one below is background for questions.
 > ENACT has just changed its pick to Machine B. Machine A is still above sixty percent though,
 > and B is only a little better, so Sunflower stays put. It does not chase small differences.
 
-*(about 0:21: Machine A's bar turns grey, and both timers start counting)*
+*(about 0:21: Machine A's bar turns grey, and both big numbers start counting)*
 
 > Now Machine A has dropped below sixty percent. Both copies are on dirty power and both
-> timers are running. Look at the line at the bottom of each panel: the app's own check,
+> numbers are counting. Look at the line at the bottom of each panel: the app's own check,
 > built with ENACT's Application Controller, says "relocate" on both sides. Sunflower waits
 > eight seconds to be sure it is not a blip.
 
@@ -104,18 +105,20 @@ version, the longer one below is background for questions.
 > answering, then let the first one go. Look at the bottom right: every request answered,
 > zero lost.
 >
-> The timer on the right stopped at twelve seconds. Eight of those were Sunflower being
-> careful, and three and a half were the move. The app was answering the whole time.
+> In the replay that took twelve seconds. Eight were Sunflower being careful, and three and
+> a half were the move. The app was answering the whole time.
 >
-> The left-hand timer is still running, because that copy is still on Machine A.
+> The left-hand number is still climbing, because that copy is still on Machine A.
 
 *(let it run to about 1:15, then talk over the rest)*
 
-> By the end of the day's data, the standard build has spent forty-eight seconds on dirty
-> power and Sunflower twelve. That is the replay, which runs the day four hundred and fifty
-> times faster. At real speed the left side is six hours. The right side is about twenty-four
-> seconds, because Sunflower's wait and its move take the same time however slowly the grid
-> changes.
+> Look at the two big numbers. At real speed the standard build spends six hours on dirty
+> power. Sunflower spends about twenty-four seconds.
+>
+> The small print under them is this replay, which runs the day four hundred and fifty times
+> faster: forty-eight seconds against twelve. That looks like four to one, and it is not the
+> comparison. The left side's time stretches with the day. Sunflower's wait and its move take
+> the same time however slowly the grid changes.
 
 ## 3:00 to 3:50, why it is safe (stay on the screen)
 

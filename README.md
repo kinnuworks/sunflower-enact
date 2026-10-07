@@ -4,7 +4,7 @@ Sunflower moves a running app to the computer with the cleanest power, without l
 
 Built for Veles Hack 2026, Challenge 3 (ENACT, Kubernetes Dynamic Adaptation).
 
-![Two copies of the same app over one replayed day of grid data. The standard build spends 48 seconds on dirty power and never leaves Machine A. The copy with Sunflower spends 12 seconds on dirty power, then moves to Machine B. Each was sent 507 requests and lost none.](docs/img/race.png)
+![Two copies of the same app over one replayed day of grid data. At real speed the standard build spends 6 hours on dirty power and never leaves Machine A. The copy with Sunflower spends about 24 seconds on dirty power, then moves to Machine B. Each was sent 507 requests and lost none.](docs/img/race.png)
 
 The picture is one real run on the challenge's three-node ENACT cluster. Two copies of
 GreenCharge receive the same traffic, five requests a second each. Machine A is fed the green
@@ -15,23 +15,25 @@ which is where the name comes from.
 
 | | Standard build | With Sunflower |
 |---|---|---|
-| Time on dirty power, in the replay | 48 s | 12 s, a quarter of that |
-| The same at real speed | 6 hours | about 24 seconds |
+| Time on dirty power, at real speed | 6 hours | about 24 seconds |
+| The same stretch in our replay, 450 times faster | 48 s | 12 s |
 | Requests lost | 0 of 507 | 0 of 507 |
 | When Machine A fell below 60% green | stayed on it | moved to Machine B in 3.5 s |
 | What the app's own Application Controller check said | `relocate`, for 48 s | `relocate`, for 12 s |
 
-Of Sunflower's 12 seconds, 8 are a deliberate wait to be sure the drop is real, and 3.5 are the
-move: start a second copy on Machine B, let it warm up, switch the traffic, stop the first.
-Both copies answer every request the whole time. The wait is a setting (`--settle`).
+The replay figures, 48 s against 12 s, look like four to one. They are not the comparison,
+because the two numbers do not scale the same way. The replay squeezes the day 450 times. The
+standard build's 48 seconds are the whole stretch Machine A's grid stayed below 60%, and at
+real speed that stretch is 6 hours. Sunflower's 12 seconds are 8 seconds of deliberate wait,
+to be sure the drop is real, and a 3.5-second move. Neither gets longer when the day runs at
+real speed: the wait is 20 seconds by default (`--settle`, shortened to 8 for the replay) and
+the move is the same 3.5 seconds. That is about 24 seconds, plus however long ENACT takes to
+change its pick, which was under a second in the three clean runs and 18 seconds in the worst
+one.
 
-At real speed the gap is far wider than four to one. The replay squeezes the day 450 times,
-so the standard build's 48 seconds stand for the 6 hours Machine A's grid stayed below 60%.
-Sunflower's wait and move do not stretch with the day. With its default 20-second wait and
-the 3.5-second move we measured, it would be on dirty power for about 24 seconds, plus however
-long ENACT takes to change its pick. That was under a second in the three clean runs and 18
-seconds in the worst one. That second
-figure is worked out from the measurements; the replay figures are measured directly.
+The 6 hours follow directly from the grid data. The 24 seconds are worked out from the
+measured move and the default wait; we have not run a full day at real speed. Both copies
+answer every request the whole time.
 
 The run is saved as measured in [`docs/demo/run.json`](docs/demo/run.json). To watch it play back:
 
@@ -84,7 +86,7 @@ and [`docs/demo/`](docs/demo).
 
 | Test | Result |
 |---|---|
-| The replayed day, three runs in a row | 506, 507 and 523 requests to each copy, none lost. Standard build: 48 s on dirty power each time. Sunflower: 12, 12 and 13 s, with moves of 3.5, 3.6 and 4.1 s |
+| The replayed day, three runs in a row | 506, 507 and 523 requests to each copy, none lost. In replay seconds, the standard build was on dirty power for 48 s each time and Sunflower for 12, 12 and 13 s, with moves of 3.5, 3.6 and 4.1 s. At real speed that is 6 hours against about 24 seconds |
 | The same day with ENACT's monitor API restarting | Sunflower cannot move before ENACT names another machine. In this run that took 18 s, because the monitor API had just been killed for answering a health check late, and the operator kept its old pick meanwhile. Sunflower spent 39 s on dirty power against the standard build's 48 s, none lost. `deploy/steady.sh` now gives the monitor API room |
 | The same day before we warmed the app up | on a busy laptop the move took 14.7 s and 4 of 529 requests to the moving copy were lost. The new copy's first requests took over 2 s on a cold JVM |
 | 30 forced moves in a row | all completed. 1,777 requests to the moving copy, none lost. Median move 3.6 s, slowest 5.5 s |
