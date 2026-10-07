@@ -1,12 +1,12 @@
 server:
   port: 8080
 
-# ENACT Step 1 (Dataspaces): after negotiating a contract with the utility's
-# provider and transferring the carbon-feed file onto this machine, set this to
-# the path of that file. This is the ONLY line of app config a team edits.
+# ENACT Step 1 (Dataspaces): the path of the carbon-feed file transferred from the utility's
+# provider through the ENACT SDK. See dataspace/README.md for how it was obtained. The path is
+# relative to the greencharge folder; in the cluster CARBON_FEED_FILE overrides it.
 carbon:
   feed:
-    file: REPLACE_ME
+    file: dataspace/grid-carbon-intensity.json
 
 # Auto-open the browser on startup (set false in containers / CI).
 app:

@@ -92,6 +92,15 @@ One step done through the assistant on 2026-10-06: `generate_runtime_policy`, wi
 
 | 40 | The monitor API ships with a 100m CPU limit and a liveness probe that times out after 1 s. With the policy operator querying it on every node change it is throttled, fails the probe and is killed (exit 137); we counted six restarts in eight hours. Each restart pulls the image again (`imagePullPolicy: Always`). While it is down the operator logs `Failed to fetch cluster metrics` on every pass and keeps its previous `chosenNode`. In one run that left a policy naming a node below its green minimum for 18 s. | Ran | `deploy/steady.sh`: one CPU and a 5 s probe timeout for the monitor API, `IfNotPresent` for the three ENACT deployments |
 
-## To be completed
+### Dataspaces
 
-The Dataspaces module is added once it has been run.
+Done on 2026-10-07 through the SDK: connector added, catalogue browsed, contract negotiated,
+file transferred and saved. Screenshots are `evidence/checklist/23` to `32`; the values we
+used are in `greencharge/dataspace/README.md`.
+
+| # | What happens | Status | Fix we used |
+|---|---|---|---|
+| 41 | The brief gives the consumer's Management URL and the provider's DSP URL. The Add connector dialog also needs the consumer's own DSP URL, an API key header and key, and a relay URL, none of which are in the brief, the repository or the install guide. Several teams were stuck at this dialog for a day. | Ran | Key and header from the mentors; DSP URL inferred as the same host with `/api/dsp` |
+| 42 | The connector only supports push delivery, so "Download to this computer" is disabled until a Relay URL is set, and nothing says what that URL is. We found it by reading the destination column of earlier completed transfers in the Transfers list: `https://sovity-download.sedimark.work`. | Ran | Entered that address as the Relay URL |
+| 43 | The consumer connector is shared, so every team sees every other team's negotiations, agreements and transfer destinations, and the agreement chooser for a new transfer lists all of them. | Ran | Chose our own agreement by its signing time |
+| 44 | The flow itself worked first time once the values were in: Detect recognised the API version, the catalogue showed the asset with its terms, the negotiation list refreshed until the agreement was final, and the file arrived in under ten minutes from the first click. | Ran | n/a |

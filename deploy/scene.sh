@@ -5,7 +5,10 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$(dirname "$HERE")"
 CTX=kind-enact-dev; WITNESS=http://localhost:35590
-ORIGIN="grid replay: NESO Carbon Intensity API"   # the dataspace transfer is not what feeds this file
+# GreenCharge's carbon feed is the file transferred from the ENACT dataspace. The folder mounted
+# into both copies gets a fresh copy of it on every staging.
+FEED=grid-carbon-intensity.json
+cp "$ROOT/greencharge/dataspace/$FEED" "$HERE/.grid/$FEED"
 k() { kubectl --context "$CTX" "$@"; }
 h() { helm --kube-context "$CTX" "$@"; }
 
@@ -34,9 +37,9 @@ done
 [ -n "$CHOSEN" ] || { echo "the policy operator has not chosen a node" >&2; exit 1; }
 
 h upgrade --install standard "$ROOT/greencharge/chart" -n enact \
-  --set carbonFeed.hostPath=/grid --set-string "carbonFeed.origin=$ORIGIN" --set "nodeSelector.kubernetes\.io/hostname=$CHOSEN" >/dev/null
+  --set carbonFeed.hostPath=/grid --set "carbonFeed.file=$FEED" --set "nodeSelector.kubernetes\.io/hostname=$CHOSEN" >/dev/null
 h upgrade --install sunflower "$ROOT/greencharge/chart" -n enact \
-  --set carbonFeed.hostPath=/grid --set-string "carbonFeed.origin=$ORIGIN" --set service.nodePort=32586 \
+  --set carbonFeed.hostPath=/grid --set "carbonFeed.file=$FEED" --set service.nodePort=32586 \
   --set sunflower.enabled=true --set sunflower.policy=greencharge-sunflower >/dev/null
 # Forget where Sunflower's copy was, so this run starts with a fresh first placement.
 k patch deploy -n enact sunflower-greencharge --type=json -p '[{"op":"remove","path":"/spec/template/spec/nodeSelector"}]' >/dev/null 2>&1 || true

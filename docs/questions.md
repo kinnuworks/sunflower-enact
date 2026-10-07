@@ -69,9 +69,11 @@ however long ENACT takes to change its pick. The screen shows both real-speed fi
 timers. The six hours follow from the data; the 24 seconds are worked out, not yet run.
 
 **Did you do the dataspace step?**
-Not yet. The plug-in asks for a connector address and key that are not in the challenge
-material. We asked the mentors and are waiting. The feed file path is wired, and the app's
-badge says honestly where its data comes from: a replay of public grid data.
+Yes, through the plug-in: connected as the consumer, found the carbon-intensity asset in the
+provider's catalogue, negotiated the contract and transferred the file. Both copies of
+GreenCharge in the cluster read it, and the app's badge says "live (dataspace file)". The
+machines' green share on our screen is a different input: that comes from public British grid
+data, replayed.
 
 **What did you use ENACT's assistant for?**
 Generating the runtime policy. On default settings it looped 23 times and wrote a policy for

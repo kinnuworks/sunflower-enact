@@ -63,7 +63,7 @@ x = set_body(x, [
     para([run('Start with the README: ', sz=1300, b=True), run('the result, the challenge checklist with a screenshot of every SDK step, and how to run it.', sz=1300)], bullet=True),
     para([run('A recorded run you can play in a browser: ', sz=1300, b=True), run('docs/demo, drawn from the measured data, unedited.', sz=1300)], bullet=True),
     para([run('The raw results: ', sz=1300, b=True), run('evidence/ holds the file behind every number we quote.', sz=1300)], bullet=True),
-    para([run('What we are giving back to ENACT: ', sz=1300, b=True), run('docs/field-report.md, 40 findings, each with the fix we used.', sz=1300)], bullet=True),
+    para([run('What we are giving back to ENACT: ', sz=1300, b=True), run('docs/field-report.md, 44 findings, each with the fix we used.', sz=1300)], bullet=True),
     para([run('Licence: Apache-2.0', sz=1300)], bullet=True, after=0),
 ])
 save(2, x)
@@ -75,7 +75,7 @@ x = set_body(x, [
     para([run('ENACT’s policy operator names the best machine for an app and keeps that answer current as the grid changes.', sz=1300)], bullet=True),
     para([run('After deploy day the app does not follow. ', sz=1300, b=True), run('The SDK pins it once, so when its machine’s power turns dirty, GreenCharge stays there, below its own 60% rule.', sz=1300)], bullet=True),
     para([run('Sunflower is a small controller that reads ENACT’s choice and moves the app to it, ', sz=1300, b=True), run('once the change has lasted, without losing a request.', sz=1300)], bullet=True),
-    para([run('We completed the challenge checklist in the ENACT SDK first, then built Sunflower on top.', sz=1300)], bullet=True, after=0),
+    para([run('We completed all five items of the challenge checklist in the ENACT SDK, dataspace included, then built Sunflower on top.', sz=1300)], bullet=True, after=0),
 ], xfrm=(311700, 1152475, 3830000, 3416400))
 x = add(x, [pic(201, 'rId9', 4352000, 1235000, PW, PH, 'Two copies of GreenCharge over one replayed day of grid data: the standard build stays on Machine A, the copy with Sunflower moves to Machine B.'),
             box(202, 'Caption', 4352000, 1235000 + PH + 70000, PW, 420000,
@@ -87,7 +87,7 @@ x = slide(4)
 CW = 2700000; X0 = 311700; GAP = 210300; Y = 1180000
 stats = [('0', 'requests lost', 'across 30 moves in a row, 1,777 requests, on the challenge cluster'),
          ('48 → 12 s', 'on dirty power', 'in the replay. At real speed: 6 hours for the standard build, about 24 seconds with Sunflower'),
-         ('40', 'findings given back', 'problems we hit in ENACT, each written up with the fix we used')]
+         ('44', 'findings given back', 'problems we hit in ENACT, each written up with the fix we used')]
 shapes = []
 for k, (big, label, small) in enumerate(stats):
     cx = X0 + k * (CW + GAP)
@@ -97,9 +97,9 @@ for k, (big, label, small) in enumerate(stats):
         para([run(small, sz=1050, color=SOFT)], after=0, line=108)]))
 x = set_body(x, [
     para([run('Where the 12 s go: ', sz=1200, b=True), run('8 s is a deliberate wait to be sure the drop is real, and 3.5 s is the move. Neither stretches with the day, so at real speed (default wait 20 s) Sunflower is on dirty power for about 24 seconds while the standard build sits through 6 hours.', sz=1200)], bullet=True, after=300),
-    para([run('Checklist done in the ENACT SDK: ', sz=1200, b=True), run('policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the SDK’s assistant. The repo has a screenshot of every step.', sz=1200)], bullet=True, after=300),
+    para([run('Checklist done in the ENACT SDK: ', sz=1200, b=True), run('dataspace feed, policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the SDK’s assistant. The repo has a screenshot of every step.', sz=1200)], bullet=True, after=300),
     para([run('ENACT stays in charge: ', sz=1200, b=True), run('Sunflower reads the policy’s chosen machine and has no ranking of its own. It waits out short dips, ignores near-ties, limits how often it moves, and undoes a move that fails.', sz=1200)], bullet=True, after=300),
-    para([run('Still open: ', sz=1200, b=True), run('the dataspace step, which needs connector details we have asked the mentors for. We make no carbon-saving claim. We report time on dirty power, which we measured.', sz=1200)], bullet=True, after=0),
+    para([run('What we do not claim: ', sz=1200, b=True), run('carbon saved. This cluster reports energy as a model estimate, so we report time on dirty power, which we measured.', sz=1200)], bullet=True, after=0),
 ], xfrm=(311700, 2560000, 8520600, 2060000))
 x = add(x, shapes); save(4, x)
 

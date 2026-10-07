@@ -102,7 +102,7 @@ named here is saved in [`evidence/scene-runs/`](evidence/scene-runs), the bad on
 
 ## The challenge checklist
 
-Every SDK step was done in the ENACT plug-in for Eclipse. There is a screenshot of each screen
+All five items in the brief's Definition of Done are complete. Every SDK step was done in the ENACT plug-in for Eclipse. There is a screenshot of each screen
 in [`evidence/checklist/`](evidence/checklist); the numbers below refer to those files.
 
 | Brief item | Status | Where |
@@ -115,7 +115,7 @@ in [`evidence/checklist/`](evidence/checklist); the numbers below refer to those
 | Deploy with the policy, pod placed by the operator | Done | SDK deploy (11 to 18): policy applied, node chosen, Deployment pinned, pod running there |
 | Monitor under a load burst | Done | [`monitor-grafana-burst.png`](evidence/monitor-grafana-burst.png), `deploy/monitor.sh`, `deploy/burst.sh` |
 | One step through the SDK's assistant (bonus) | Done | `generate_runtime_policy` (19 to 22). Its policy is valid but dropped two fields we asked for, so the wizard's policy is the one in use |
-| Dataspace feed | Not done yet | The Dataspaces step needs a connector address and key that are not in the challenge material. We have asked the mentors ([`mentor-message.md`](docs/mentor-message.md)). GreenCharge already reads `carbon.feed.file`; here that file is written from public grid data, and the app's badge says so |
+| Dataspace feed | Done | SDK Dataspaces module (23 to 32): connected as consumer, found `grid-carbon-intensity` in the provider's catalogue, negotiated the contract, transferred the file. It is [`greencharge/dataspace/grid-carbon-intensity.json`](greencharge/dataspace/grid-carbon-intensity.json), unedited, and both copies in the cluster read it: the badge says "live (dataspace file)" and the recommended charger changed to Harbor Docks |
 
 The adaptation service also checks three policy fields that the Application Controller loads
 and never compares with anything: green energy mix, power ceiling and region. When one fails
@@ -123,7 +123,7 @@ it recommends `relocate`.
 
 ## What we found in ENACT along the way
 
-We wrote down each problem we hit, with the fix we used: 40 findings in
+We wrote down each problem we hit, with the fix we used: 44 findings in
 [`docs/field-report.md`](docs/field-report.md), and five issue drafts for the ENACT team in
 [`upstream/`](upstream). Four that a new user meets on day one:
 

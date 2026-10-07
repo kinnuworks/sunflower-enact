@@ -13,9 +13,10 @@ Britain's 14 distribution regions, from 26 September to 6 October 2026, at 30-mi
   Nothing else is changed.
 
 How it is used: each cluster node is assigned one region as its grid zone. A node's
-`enact.eu/green-ratio` label is that region's wind + solar + hydro share; the carbon feed file
-GreenCharge reads is that half-hour's intensity for the four districts. The demo replays the
+`enact.eu/green-ratio` label is that region's wind + solar + hydro share. GreenCharge's own
+carbon feed for the four districts does not come from this data: it is the file transferred
+from the ENACT dataspace (`greencharge/dataspace/`). The replay still writes a district file
+(`carbon.json`) from the same half-hour, which nothing reads now. The demo replays the
 data faster than real time; the speed is shown on screen.
 
 The district names (Harbor, Riverside, Uptown, OldTown) are GreenCharge's own and fictional.
-The numbers behind them are the real regions' numbers.

@@ -84,13 +84,14 @@ can say whose delay it was.
 ## 3:50 to 4:40, what we give back (Highlights slide)
 
 > To get here we had to read ENACT's source and run into its rough edges. We wrote every one
-> down with the fix we used: forty findings. Two examples. On a fresh cluster the policy
+> down with the fix we used: forty-four findings. Two examples. On a fresh cluster the policy
 > never picks a machine at all, for four separate reasons, and our setup script fixes all
 > four. And ENACT's own assistant gets stuck in a loop on default settings, because half of
 > its instructions are cut off before the model reads them. We found the cause and the fix.
 >
-> One thing is still open, and I would rather say so: the dataspace step needs connection
-> details we have not been given yet.
+> And all five items of the challenge's own checklist are done through the ENACT plug-in,
+> including the dataspace: the carbon figures GreenCharge is using right now came through
+> ENACT's Data and Object Space this morning.
 
 ## 4:40 to 5:00, close
 
