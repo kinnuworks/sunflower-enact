@@ -99,7 +99,6 @@ x = set_body(x, [
     para([run('How I get 6 hours against 24 seconds: ', sz=1200, b=True), run('my replay runs the day 450 times faster and shows 48 s against 12 s. The standard build’s 48 s are the whole dirty stretch, which is 6 hours at real speed. Sunflower’s 12 s are a wait and a 3.5 s move that do not stretch with the day: with its default 20 s wait, about 24 seconds.', sz=1200)], bullet=True, after=300),
     para([run('Checklist done in the ENACT SDK: ', sz=1200, b=True), run('dataspace feed, policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the SDK’s assistant. The repo has a screenshot of every step.', sz=1200)], bullet=True, after=300),
     para([run('ENACT stays in charge: ', sz=1200, b=True), run('Sunflower reads the policy’s chosen machine and has no ranking of its own. It waits out short dips, ignores near-ties, limits how often it moves, and undoes a move that fails.', sz=1200)], bullet=True, after=300),
-    para([run('What I do not claim: ', sz=1200, b=True), run('carbon saved. This cluster reports energy as a model estimate, so I report time on dirty power, which I measured.', sz=1200)], bullet=True, after=0),
 ], xfrm=(311700, 2560000, 8520600, 2060000))
 x = add(x, shapes); save(4, x)
 

@@ -42,7 +42,6 @@ highlights = content(4, 'Highlights', cols + f'''<div class="body tight" style="
    <li><b>How I get 6 hours against 24 seconds:</b> my replay runs the day 450 times faster and shows 48 s against 12 s. The standard build’s 48 s are the whole dirty stretch, which is 6 hours at real speed. Sunflower’s 12 s are a wait and a 3.5 s move that do not stretch with the day: with its default 20 s wait, about 24 seconds.</li>
    <li><b>Checklist done in the ENACT SDK:</b> dataspace feed, policy model, Application Controller extension (14 tests), policy, packaging, deployment and monitoring, plus one step with the SDK’s assistant. The repo has a screenshot of every step.</li>
    <li><b>ENACT stays in charge:</b> Sunflower reads the policy’s chosen machine and has no ranking of its own. It waits out short dips, ignores near-ties, limits how often it moves, and undoes a move that fails.</li>
-   <li><b>What I do not claim:</b> carbon saved. This cluster reports energy as a model estimate, so I report time on dirty power, which I measured.</li>
   </ul></div>''')
 css = '''
 @font-face{font-family:Roboto;src:url(roboto-400.woff2);font-weight:400}@font-face{font-family:Roboto;src:url(roboto-500.woff2);font-weight:500}@font-face{font-family:Roboto;src:url(roboto-700.woff2);font-weight:700}
