@@ -46,7 +46,7 @@ version, the longer one below is background for questions.
 *(let the day finish)*
 
 > Left: six hours on dirty power. Right: twenty-four seconds.
-> Those are real speed. The small numbers under them, forty-eight seconds and twelve, are
+> Those are real speed. The grey numbers beside them, forty-eight seconds and twelve, are
 > this fast replay.
 >
 > Sunflower never picks the machine. ENACT does. Sunflower follows it, carefully.
@@ -115,8 +115,8 @@ version, the longer one below is background for questions.
 > Look at the two big numbers. At real speed the standard build spends six hours on dirty
 > power. Sunflower spends about twenty-four seconds.
 >
-> The small print under them is this replay, which runs the day four hundred and fifty times
-> faster: forty-eight seconds against twelve. That looks like four to one, and it is not the
+> The grey number beside each one is this replay, which runs the day four hundred and fifty
+> times faster: forty-eight seconds against twelve. That looks like four to one, and it is not the
 > comparison. The left side's time stretches with the day. Sunflower's wait and its move take
 > the same time however slowly the grid changes.
 

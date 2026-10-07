@@ -63,8 +63,12 @@
   .build { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 28px 14px; }
   .build h2 { font-size: 26px; font-weight: 800; }
   .build .what { margin: 3px 0 0; font-size: 16px; color: var(--quiet); }
-  .build .time { margin-top: 10px; font-size: 62px; font-weight: 800; line-height: .95; letter-spacing: -0.02em; white-space: nowrap; }
-  .build .cap { font-size: 17px; margin-top: 2px; }
+  /* The replay's own timer and what that time is at real speed, side by side and counting together. */
+  .build .pair { display: flex; align-items: flex-end; gap: 18px; margin-top: 10px; }
+  .build .tick { font-size: 44px; font-weight: 700; line-height: .95; color: var(--quiet); letter-spacing: -0.01em; }
+  .build .is { font-size: 20px; color: var(--quiet); padding-bottom: 30px; }
+  .build .time { font-size: 62px; font-weight: 800; line-height: .95; letter-spacing: -0.02em; white-space: nowrap; }
+  .build .cap { font-size: 15.5px; margin-top: 3px; white-space: nowrap; }
   .build .replay { font-size: 14.5px; color: var(--quiet); margin-top: 1px; min-height: 21px; }
   .build .ran { margin-top: 12px; }
   .build .ran .label { font-size: 14.5px; color: var(--quiet); margin-bottom: 5px; }
@@ -92,7 +96,7 @@
   @media (max-height: 860px) { .latest .earlier { display: none; } }
   footer { margin-top: 8px; font-size: 12.5px; color: var(--quiet); }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  @media (max-height: 740px) { .page { padding-top: 12px; } .brand svg { width: 50px; height: 50px; } .day { margin-top: 12px; } .strip { padding: 2px 0; } .compare { margin-top: 10px; } .build { padding: 14px 26px 12px; } .build .time { font-size: 58px; margin-top: 8px; } .build .ran { margin-top: 8px; } .latest { margin-top: 10px; } }
+  @media (max-height: 740px) { .build .tick { font-size: 38px; } .build .is { padding-bottom: 26px; } .page { padding-top: 12px; } .brand svg { width: 50px; height: 50px; } .day { margin-top: 12px; } .strip { padding: 2px 0; } .compare { margin-top: 10px; } .build { padding: 14px 26px 12px; } .build .time { font-size: 58px; margin-top: 8px; } .build .ran { margin-top: 8px; } .latest { margin-top: 10px; } }
   @media (max-width: 900px) { header, .compare { grid-template-columns: 1fr; row-gap: 14px; } .clock { text-align: left; } .controls { justify-content: flex-start; } .strip { grid-template-columns: 1fr; row-gap: 3px; } .strip .now { text-align: left; } }
 </style>
 </head>
@@ -160,7 +164,11 @@ $('petals').innerHTML = Array.from({ length: 12 }, (_, i) => `<ellipse cx="30" c
 for (const b of BUILDS) {
   $('build-' + b.id).innerHTML = `
     <h2>${b.title}</h2><p class="what">${b.what}</p>
-    <div class="time" id="${b.id}-time">0 seconds</div><div class="cap" id="${b.id}-cap">on dirty power, at real speed</div>
+    <div class="pair" aria-label="Time on dirty power">
+      <div><div class="tick" id="${b.id}-tick">0:00</div><div class="cap">in this replay</div></div>
+      <div class="is" aria-hidden="true">is</div>
+      <div><div class="time" id="${b.id}-time">0 seconds</div><div class="cap" id="${b.id}-cap">on dirty power, at real speed</div></div>
+    </div>
     <div class="replay" id="${b.id}-replay"></div>
     <div class="ran">
       <div class="bar" id="${b.id}-bar" role="img"></div>
@@ -298,13 +306,13 @@ function render(doc, P) {
         const moved = done ? done.seconds : start ? Math.max(0, P - start.t) : 0;
         real = pick + Math.min(1, waited / Math.max(1, settle)) * REAL_WAIT + moved;
         if (done) parts = { done, pick, wait: start.t - watch.t, move: done.seconds };
-        why = `. Its ${REAL_WAIT} s wait and its move do not stretch with the day`;
+        why = `Its ${REAL_WAIT} s wait and its move do not stretch with the day`;
       }
     }
     const spoken = (sec) => sec < 90 ? `${Math.round(sec)} seconds` : sec < 5400 ? `${Math.round(sec / 60)} minutes` : `${(Math.round(sec / 1800) / 2).toLocaleString('en-GB')} hours`;
+    $(b.id + '-tick').textContent = mmss(B.dirty);
     $(b.id + '-time').textContent = spoken(real);
-    $(b.id + '-cap').textContent = why ? 'on dirty power at real speed, worked out from its log' : 'on dirty power, at real speed';
-    $(b.id + '-replay').textContent = doc.waiting || !doc.grid ? '' : why ? `${mmss(B.dirty)} in this replay${why}` : `${mmss(B.dirty)} in this replay, which runs the day ${Math.round(speedup)} times faster`;
+    $(b.id + '-replay').textContent = doc.waiting || !doc.grid ? '' : why || `The replay runs the day ${Math.round(speedup)} times faster`;
     const said = stepAtMark((doc.tl.advice || {})[b.id], P);
     $(b.id + '-check').innerHTML = !said ? '' : said.action === 'no_action' ? 'Its own Application Controller check: <b>within policy</b>'
       : said.action === 'relocate' ? 'Its own Application Controller check: <b>relocate</b>, this machine is below the policy’s green mix'
