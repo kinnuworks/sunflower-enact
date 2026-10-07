@@ -51,6 +51,9 @@ closed.
 > answering, then let the first one go. Look at the bottom right: every request answered,
 > zero lost.
 >
+> The timer on the right stopped at twelve seconds. Eight of those were Sunflower being
+> careful, and three and a half were the move. The app was answering the whole time.
+>
 > The left-hand timer is still running, because that copy is still on Machine A.
 
 *(let it run to about 1:15, then talk over the rest)*

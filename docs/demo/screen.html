@@ -71,7 +71,7 @@
   .build .bar { height: 42px; border-radius: 10px; }
   .build .bar .seg { font-size: 15.5px; padding-left: 12px; }
   .flag { position: relative; height: 26px; font-size: 14.5px; font-weight: 600; }
-  .flag span { position: absolute; top: 4px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .flag span { position: absolute; top: 4px; left: 0; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
   .flag svg { width: 18px; height: 18px; }
   .build .facts { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 20px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 16px; }
   .facts b { font-weight: 700; }
@@ -283,10 +283,22 @@ function render(doc, P) {
         return seg(W, r.from, r.to, r.clean ? 'clean' : 'dirty', r.clean ? 'Machine ' + r.m.letter : (px >= 96 ? `${secs} s dirty` : `${secs} s`), r.clean ? 92 : 48); }).join('')
       + B.lostAt.map((t) => `<i class="lost" style="left:${V.pc(t)}%"></i>`).join('');
     $(b.id + '-bar').setAttribute('aria-label', `${b.title}: ` + B.runs.map((r) => `Machine ${r.m.letter} on ${r.clean ? 'clean' : 'dirty'} power for ${Math.round(r.to - r.from)} seconds`).join(', '));
-    const moved = b.id === 'sunflower' ? notes.filter((r) => r.kind === 'Moved' || r.kind === 'Aborted') : [];
-    $(b.id + '-flag').innerHTML = moved.map((r) => { const m = r.to && machines[r.to];
-      const text = r.kind === 'Aborted' ? 'Move undone' : `Moved to ${m ? 'Machine ' + m.letter : 'the other machine'}${r.seconds ? ` in ${r.seconds.toFixed(1)} s` : ''}`;
-      return V.pc(r.t) < 62 ? `<span style="left:${V.pc(r.t)}%;transform:translateX(-9px)">${FLOWER}${text}</span>` : `<span style="right:${100 - V.pc(r.t)}%;transform:translateX(9px);flex-direction:row-reverse">${FLOWER}${text}</span>`; }).join('');
+    // What happened, in one line under the bar. For Sunflower's copy the wait is measured: from
+    // its "waiting" entry to its "moving" entry.
+    let told = P > 1 && !doc.waiting ? 'Did not move' : '';
+    if (b.id === 'sunflower') {
+      const done = notes.filter((r) => r.kind === 'Moved' || r.kind === 'Aborted').slice(-1)[0];
+      if (done) {
+        const start = notes.filter((r) => r.kind === 'Moving' && r.t <= done.t).slice(-1)[0];
+        const watch = start && notes.filter((r) => r.kind === 'Watching' && r.t <= start.t).slice(-1)[0];
+        const waited = watch ? `Waited ${Math.round(start.t - watch.t)} s to be sure, then moved` : 'Moved', m = done.to && machines[done.to];
+        told = FLOWER + (done.kind === 'Aborted' ? 'Tried to move, could not, and put the app back'
+          : `${waited} to ${m ? 'Machine ' + m.letter : 'the other machine'}${done.seconds ? ` in ${done.seconds.toFixed(1)} s` : ''}`);
+      } else if (last && last.kind === 'Watching') told = 'Waiting to be sure the drop lasts';
+      else if (last && last.kind === 'Moving') told = 'Starting a second copy on the machine ENACT picked';
+      else if (told) told = 'Has not needed to move';
+    }
+    $(b.id + '-flag').innerHTML = told ? `<span>${told}</span>` : '';
     const moving = b.id === 'sunflower' && last && last.kind === 'Moving', waiting = b.id === 'sunflower' && last && last.kind === 'Watching';
     $(b.id + '-now').innerHTML = !B.machine ? 'Starting up' : moving ? 'Moving to the machine ENACT picked'
       : `<i class="dot" style="background:var(--${B.clean ? 'clean' : 'dirty'})"></i>Now on <b>Machine ${B.machine.letter}</b>, on ${B.clean ? 'clean' : 'dirty'} power${waiting ? '. Waiting to be sure it lasts' : ''}`;

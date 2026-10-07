@@ -46,7 +46,14 @@ We don't claim a number. On this cluster the energy figures are model estimates 
 virtual machine, nearly identical for every node. What we can measure is time spent out of
 policy, so that is what we report.
 
-**Why 48 seconds and 13? Those are small.**
+**Why does Sunflower need 12 seconds?**
+Eight of them are a deliberate wait, to be sure the drop is real and not a blip. The move
+itself takes about three and a half: start a second copy on the other machine, let it warm
+up, switch the traffic, stop the first. The app answers every request throughout. The wait is
+a setting. At zero the total would be about four seconds, and it would then move for every
+short dip.
+
+**Why 48 seconds and 12? Those are small.**
 They are replayed seconds. Half an hour of grid data passes every four seconds, so 48 seconds
 on screen is six hours of the real day, against an hour and a half. The screen says so under
 each timer.

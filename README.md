@@ -20,6 +20,10 @@ which is where the name comes from.
 | When Machine A fell below 60% green | stayed on it | moved to Machine B in 3.5 s |
 | What the app's own Application Controller check said | `relocate`, for 48 s | `relocate`, for 12 s |
 
+Of Sunflower's 12 seconds, 8 are a deliberate wait to be sure the drop is real, and 3.5 are the
+move: start a second copy on Machine B, let it warm up, switch the traffic, stop the first.
+Both copies answer every request the whole time. The wait is a setting (`--settle`).
+
 The run is saved as measured in [`docs/demo/run.json`](docs/demo/run.json). To watch it play back:
 
 ```bash
