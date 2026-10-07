@@ -111,8 +111,8 @@ in [`evidence/checklist/`](evidence/checklist); the numbers below refer to those
 | Application Controller extension | Done | wizard (01, 02), [`adaptation/`](greencharge/src/main/java/eu/enact/greencharge/adaptation), `POST /adaptation/recommendation` |
 | `mvn clean test` passes | Done, 14 tests | both cases the brief names are in [`AdaptationServiceTest`](greencharge/src/test/java/eu/enact/greencharge/adaptation/AdaptationServiceTest.java) |
 | RuntimePolicy: Soft green ≥ 0.6, Hard region `eu-west`, availability 0.9 | Done | wizard (03 to 06), [`greencharge.yaml`](greencharge/.enact/policies/greencharge.yaml) |
-| Packaging: image `greencharge:1.0`, port 8080, ingress `greencharge.local` | Done | wizard (07 to 10), [`sdk-packaging/`](greencharge/sdk-packaging), [`sdk-manifests/`](greencharge/sdk-manifests) |
-| Deploy with the policy, pod placed by the operator | Done | SDK deploy (11 to 18): policy applied, node chosen, Deployment pinned, pod running there |
+| Packaging: Helm chart, image `greencharge:1.0`, port 8080, ingress `greencharge.local` | Done | wizard (07 to 10). Helm chart in [`sdk-packaging/`](greencharge/sdk-packaging), which passes `helm lint` and a server-side dry run; the same as manifests in [`sdk-manifests/`](greencharge/sdk-manifests) |
+| Deploy with the policy, pod placed by the operator on `enact-dev-worker` | Done | SDK deploy (33 to 38): policy applied, `enact-dev-worker` chosen, Deployment pinned, pod running there. Deployed from the SDK's manifests, because SDK 1.5.0 answers "Helm chart deployment is not available yet" (36). An earlier deploy, with different green scores on the nodes, is 11 to 18 |
 | Monitor under a load burst | Done | [`monitor-grafana-burst.png`](evidence/monitor-grafana-burst.png), `deploy/monitor.sh`, `deploy/burst.sh` |
 | One step through the SDK's assistant (bonus) | Done | `generate_runtime_policy` (19 to 22). Its policy is valid but dropped two fields we asked for, so the wizard's policy is the one in use |
 | Dataspace feed | Done | SDK Dataspaces module (23 to 32): connected as consumer, found `grid-carbon-intensity` in the provider's catalogue, negotiated the contract, transferred the file. It is [`greencharge/dataspace/grid-carbon-intensity.json`](greencharge/dataspace/grid-carbon-intensity.json), unedited, and both copies in the cluster read it: the badge says "live (dataspace file)" and the recommended charger changed to Harbor Docks |
@@ -123,7 +123,7 @@ it recommends `relocate`.
 
 ## What we found in ENACT along the way
 
-We wrote down each problem we hit, with the fix we used: 44 findings in
+We wrote down each problem we hit, with the fix we used: 45 findings in
 [`docs/field-report.md`](docs/field-report.md), and five issue drafts for the ENACT team in
 [`upstream/`](upstream). Four that a new user meets on day one:
 

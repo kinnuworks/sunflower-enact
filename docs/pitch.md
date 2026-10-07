@@ -84,7 +84,7 @@ can say whose delay it was.
 ## 3:50 to 4:40, what we give back (Highlights slide)
 
 > To get here we had to read ENACT's source and run into its rough edges. We wrote every one
-> down with the fix we used: forty-four findings. Two examples. On a fresh cluster the policy
+> down with the fix we used: forty-five findings. Two examples. On a fresh cluster the policy
 > never picks a machine at all, for four separate reasons, and our setup script fixes all
 > four. And ENACT's own assistant gets stuck in a loop on default settings, because half of
 > its instructions are cut off before the model reads them. We found the cause and the fix.

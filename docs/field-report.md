@@ -68,6 +68,7 @@ Screenshots are `evidence/checklist/11` to `18`.
 | 30 | The pin is written once. After the deploy the Deployment carries no reference to its policy (no label or annotation), so nothing can tell later which policy placed it. | Ran | Sunflower's opt-in annotation names the policy |
 | 31 | The packaging wizard generates an Ingress with no `ingressClassName`, and the challenge cluster has no ingress controller, so the Ingress is created and does nothing. | Ran | Reached the app through its Service |
 | 32 | The file picker for the kubeconfig cannot show `~/.kube`, the default location, because the folder is hidden. | Ran | Typed the path |
+| 45 | The deploy wizard offers "Helm chart" as a source and accepts a chart folder through all three pages, then answers "Helm chart deployment is not available yet. Generate Kubernetes manifests from the Packaging module and deploy those instead." The brief asks teams to generate a Helm chart and deploy it. | Ran | Deployed the manifests through the SDK; checked the generated chart with `helm lint` and a server-side dry run |
 
 ### AI Assistant
 
