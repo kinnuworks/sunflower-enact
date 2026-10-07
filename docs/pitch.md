@@ -11,6 +11,55 @@ If the live run comes out slower than rehearsed, read out what the screen says u
 right-hand bar. It splits the time into ENACT's part, Sunflower's wait and the move, so you
 can say whose delay it was.
 
+## The short version
+
+About 190 words, in short sentences, so the screen does most of the talking. Say each line,
+then stop and let people look. Silence while the screen plays is fine. If you use this
+version, the longer one below is background for questions.
+
+**Title slide**
+
+> Hi, I'm ___. This is Sunflower.
+>
+> ENACT picks the best machine for an app. It picks once, on deploy day.
+> When that machine's power turns dirty, the app stays there.
+> Sunflower moves it.
+
+**The screen. Press "Play the day".**
+
+> This is live. It is the same app, twice. Left is the standard build. Right has Sunflower.
+>
+> The top bars are real grid data from Britain. Yellow is clean power. Grey is dirty.
+
+*(ENACT's pick changes to Machine B)*
+
+> ENACT changed its pick. Sunflower stays. The gain is too small.
+
+*(Machine A turns grey)*
+
+> Now Machine A is dirty. Both timers are running. Sunflower waits eight seconds, to be sure.
+
+*(the right-hand bar shows Machine B)*
+
+> It moved. Zero requests lost.
+
+*(let the day finish)*
+
+> Left: forty-eight seconds on dirty power. Right: twelve.
+> At real speed, that is six hours against twenty-four seconds.
+>
+> Sunflower never picks the machine. ENACT does. Sunflower follows it, carefully.
+
+**Highlights slide**
+
+> The full checklist is done in the ENACT plug-in, with the dataspace.
+> We tested thirty moves in a row. Zero requests lost.
+> We also wrote down forty-five problems we found in ENACT, each with a fix.
+>
+> Everything is in the repo. Thank you.
+
+## The longer version
+
 ## 0:00 to 0:40, the problem (title slide)
 
 > Hi, I'm ___, and this is Sunflower.
