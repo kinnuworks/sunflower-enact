@@ -117,6 +117,19 @@ in [`evidence/checklist/`](evidence/checklist); the numbers below refer to those
 | One step through the SDK's assistant (bonus) | Done | `generate_runtime_policy` (19 to 22). Its policy is valid but dropped two fields we asked for, so the wizard's policy is the one in use |
 | Dataspace feed | Done | SDK Dataspaces module (23 to 32): connected as consumer, found `grid-carbon-intensity` in the provider's catalogue, negotiated the contract, transferred the file. It is [`greencharge/dataspace/grid-carbon-intensity.json`](greencharge/dataspace/grid-carbon-intensity.json), unedited, and both copies in the cluster read it: the badge says "live (dataspace file)" and the recommended charger changed to Harbor Docks |
 
+The challenge description ends with a list of expectations. Each one, in its own words:
+
+| Expectation | Where it is met |
+|---|---|
+| Build the given application | [`greencharge/`](greencharge): `mvn clean test` passes, [`Dockerfile`](greencharge/Dockerfile) builds `greencharge:1.0` |
+| Set up a 3-node Kubernetes cluster and deploy the application | [`deploy/up.sh`](deploy/up.sh) builds the challenge's Kind cluster; the app runs on it (screenshots 33 to 38) |
+| Use the SDK to obtain files from the ENACT Data & Object Space, implement runtime policies, and deploy | Dataspaces (23 to 32), Application Policies (03 to 06), Application Deployment (33 to 38) |
+| Create runtime policies and validate their impact through hands-on experimentation | [`docs/platform-behaviour.md`](docs/platform-behaviour.md): what the operator did under Soft, Hard and mixed policies when a node's green share changed, with ties and with no node qualifying |
+| An ENACT-enhanced GreenCharge that is containerised and provides recommendations | the image above; `POST /adaptation/recommendation` answers `no_action`, `scale_up`, `scale_down` or `relocate` with a reason |
+| The application must use data originating from the ENACT DataSpace | [`greencharge/dataspace/grid-carbon-intensity.json`](greencharge/dataspace/grid-carbon-intensity.json), read by both running copies |
+| The application must use the SDK and the Application Controller jar | every step above was done in the SDK; `eu.enact-horizon:application-controller:1.0.0` is in the [`pom.xml`](greencharge/pom.xml) and does the compliance check |
+| The submission must include runtime policies that match the requirements | [`greencharge/.enact/policies/greencharge.yaml`](greencharge/.enact/policies/greencharge.yaml): Soft green ≥ 0.6, Hard region `eu-west`, availability 0.9, CPU 1 to 4, memory 2048 |
+
 The adaptation service also checks three policy fields that the Application Controller loads
 and never compares with anything: green energy mix, power ceiling and region. When one fails
 it recommends `relocate`.
