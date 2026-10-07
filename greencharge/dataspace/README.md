@@ -3,7 +3,7 @@
 `grid-carbon-intensity.json` is the asset `grid-carbon-intensity`, transferred on 7 October
 2026 with the Dataspaces module of the ENACT SDK (v1.5.0) and saved here unedited.
 
-| Step | What we used |
+| Step | What I used |
 |---|---|
 | Consumer connector (Management URL) | `https://sovity2-api.sedimark.work/api/management` |
 | Consumer DSP URL | `https://sovity2-api.sedimark.work/api/dsp` |

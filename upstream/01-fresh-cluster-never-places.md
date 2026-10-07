@@ -19,7 +19,7 @@ anything.
 4. The monitor API requires a Bearer token on `/latency/*` and `/availability/*`; the operator
    sends none and gets `401`.
    *Fix:* either let the operator send a token, or exempt those routes for in-cluster callers.
-   We used a small reverse proxy that adds the token (`deploy/metrics-bridge.yaml`).
+   I used a small reverse proxy that adds the token (`deploy/metrics-bridge.yaml`).
 
 Also: `helm upgrade` on the operator chart fails with `map[] does not contain declared merge
 key: name`, because the chart renders an image pull secret entry with an empty name. Values

@@ -16,7 +16,7 @@ which is where the name comes from.
 | | Standard build | With Sunflower |
 |---|---|---|
 | Time on dirty power, at real speed | 6 hours | about 24 seconds |
-| The same stretch in our replay, 450 times faster | 48 s | 12 s |
+| The same stretch in my replay, 450 times faster | 48 s | 12 s |
 | Requests lost | 0 of 507 | 0 of 507 |
 | When Machine A fell below 60% green | stayed on it | moved to Machine B in 3.5 s |
 | What the app's own Application Controller check said | `relocate`, for 48 s | `relocate`, for 12 s |
@@ -32,7 +32,7 @@ change its pick, which was under a second in the three clean runs and 18 seconds
 one.
 
 The 6 hours follow directly from the grid data. The 24 seconds are worked out from the
-measured move and the default wait; we have not run a full day at real speed. Both copies
+measured move and the default wait; I have not run a full day at real speed. Both copies
 answer every request the whole time.
 
 The run is saved as measured in [`docs/demo/run.json`](docs/demo/run.json). To watch it play back:
@@ -44,7 +44,7 @@ python3 -m http.server 8000 --directory docs/demo
 ## Why it exists, and how it works
 
 ENACT's policy operator reads a `RuntimePolicy`, ranks the nodes and writes the best one to
-`status.chosenNode`. It keeps that answer current. In our tests, when a node's green share fell
+`status.chosenNode`. It keeps that answer current. In my tests, when a node's green share fell
 below the policy's minimum, the operator named another node within 10 seconds.
 
 The app does not follow. The ENACT SDK reads `chosenNode` once, at deploy time, and pins the
@@ -68,7 +68,7 @@ timing:
 | Sunflower will not | Because | Flag |
 |---|---|---|
 | move for a dip that ends quickly | grid figures flicker | `--settle` |
-| leave a node that still meets the policy for one under 10% greener | with two near-equal nodes we watched the operator switch its pick twice in 150 s | `--margin` |
+| leave a node that still meets the policy for one under 10% greener | with two near-equal nodes I watched the operator switch its pick twice in 150 s | `--margin` |
 | move again straight after a move | each move starts a second copy of the app | `--dwell` |
 | move more than 6 times an hour | a faulty feed should not keep the app on the road | `--max-moves-per-hour` |
 | stop the old copy before the new one answers | that is how requests get lost | built in |
@@ -79,7 +79,7 @@ endpoint; the strip at the bottom of the screen is that log. With `--dry-run` it
 it would do and changes nothing. The whole decision is one function with 12 unit tests:
 [`sunflower/internal/placement/decide.go`](sunflower/internal/placement/decide.go).
 
-## What we measured
+## What I measured
 
 All of it ran on the challenge cluster, on one laptop. Raw files are in [`evidence/`](evidence)
 and [`docs/demo/`](docs/demo).
@@ -88,7 +88,7 @@ and [`docs/demo/`](docs/demo).
 |---|---|
 | The replayed day, three runs in a row | 506, 507 and 523 requests to each copy, none lost. In replay seconds, the standard build was on dirty power for 48 s each time and Sunflower for 12, 12 and 13 s, with moves of 3.5, 3.6 and 4.1 s. At real speed that is 6 hours against about 24 seconds |
 | The same day with ENACT's monitor API restarting | Sunflower cannot move before ENACT names another machine. In this run that took 18 s, because the monitor API had just been killed for answering a health check late, and the operator kept its old pick meanwhile. Sunflower spent 39 s on dirty power against the standard build's 48 s, none lost. `deploy/steady.sh` now gives the monitor API room |
-| The same day before we warmed the app up | on a busy laptop the move took 14.7 s and 4 of 529 requests to the moving copy were lost. The new copy's first requests took over 2 s on a cold JVM |
+| The same day before I warmed the app up | on a busy laptop the move took 14.7 s and 4 of 529 requests to the moving copy were lost. The new copy's first requests took over 2 s on a cold JVM |
 | 30 forced moves in a row | all completed. 1,777 requests to the moving copy, none lost. Median move 3.6 s, slowest 5.5 s |
 | The same test before the warm-up and the two-core limit | 30 moves, 2,632 requests, none lost. Median move 8.8 s, slowest 15.3 s |
 | Destination node unable to run the app | move undone after the timeout. The old copy served throughout, none lost |
@@ -116,7 +116,7 @@ in [`evidence/checklist/`](evidence/checklist); the numbers below refer to those
 | Packaging: Helm chart, image `greencharge:1.0`, port 8080, ingress `greencharge.local` | Done | wizard (07 to 10). Helm chart in [`sdk-packaging/`](greencharge/sdk-packaging), which passes `helm lint` and a server-side dry run; the same as manifests in [`sdk-manifests/`](greencharge/sdk-manifests) |
 | Deploy with the policy, pod placed by the operator on `enact-dev-worker` | Done | SDK deploy (33 to 38): policy applied, `enact-dev-worker` chosen, Deployment pinned, pod running there. Deployed from the SDK's manifests, because SDK 1.5.0 answers "Helm chart deployment is not available yet" (36). An earlier deploy, with different green scores on the nodes, is 11 to 18 |
 | Monitor under a load burst | Done | [`monitor-grafana-burst.png`](evidence/monitor-grafana-burst.png), `deploy/monitor.sh`, `deploy/burst.sh` |
-| One step through the SDK's assistant (bonus) | Done | `generate_runtime_policy` (19 to 22). Its policy is valid but dropped two fields we asked for, so the wizard's policy is the one in use |
+| One step through the SDK's assistant (bonus) | Done | `generate_runtime_policy` (19 to 22). Its policy is valid but dropped two fields I asked for, so the wizard's policy is the one in use |
 | Dataspace feed | Done | SDK Dataspaces module (23 to 32): connected as consumer, found `grid-carbon-intensity` in the provider's catalogue, negotiated the contract, transferred the file. It is [`greencharge/dataspace/grid-carbon-intensity.json`](greencharge/dataspace/grid-carbon-intensity.json), unedited, and both copies in the cluster read it: the badge says "live (dataspace file)" and the recommended charger changed to Harbor Docks |
 
 The challenge description ends with a list of expectations. Each one, in its own words:
@@ -136,9 +136,9 @@ The adaptation service also checks three policy fields that the Application Cont
 and never compares with anything: green energy mix, power ceiling and region. When one fails
 it recommends `relocate`.
 
-## What we found in ENACT along the way
+## What I found in ENACT along the way
 
-We wrote down each problem we hit, with the fix we used: 45 findings in
+I wrote down each problem I hit, with the fix I used: 45 findings in
 [`docs/field-report.md`](docs/field-report.md), and five issue drafts for the ENACT team in
 [`upstream/`](upstream). Four that a new user meets on day one:
 
@@ -151,7 +151,7 @@ We wrote down each problem we hit, with the fix we used: 45 findings in
   wall among them. Importing the two classes it needs gives a 23 MB jar that starts in a
   second.
 - The SDK's assistant loops on a default Ollama install. Its prompt is about 4,300 tokens and
-  Ollama's default context cuts it to 2,050, so the model never sees the request. We watched
+  Ollama's default context cuts it to 2,050, so the model never sees the request. I watched
   it call one tool 23 times and write a policy for `us-west-2`. With a 16k context it needed
   one call.
 - The packaging wizard writes `app.kubernetes.io/version: 1.0` unquoted, and the API server
@@ -174,19 +174,19 @@ for another run, `./deploy/soak.sh 30 out.json` repeats the forced-move test, an
 `./deploy/record.sh` saves the run you just watched. The organisers' original setup guide is
 at [`docs/enact-setup.md`](docs/enact-setup.md).
 
-Limits we know about:
+Limits I know about:
 
 - The three machines are containers on one laptop. Their green share is assigned from real
   regional grid data. It is not measured at the machine.
 - The grid data is unedited but replayed 450 times faster than it happened, and the waiting
   times are shortened for it: 8 s to be sure, 30 s between moves. The defaults are 20 s and
-  60 s. We have not run a full day at real speed.
-- We make no carbon claim. The energy figures this cluster reports are model estimates inside
-  a virtual machine, nearly equal for every node, so we report time on dirty power, which we
+  60 s. I have not run a full day at real speed.
+- I make no carbon claim. The energy figures this cluster reports are model estimates inside
+  a virtual machine, nearly equal for every node, so I report time on dirty power, which I
   can measure.
 - GreenCharge holds no state and runs as one replica. An app with a database needs its data
   moved as well.
-- Move time follows the host: 3.5 s on a quiet laptop, and 14.7 s in the worst run we recorded.
+- Move time follows the host: 3.5 s on a quiet laptop, and 14.7 s in the worst run I recorded.
 
 | Path | Contents |
 |---|---|

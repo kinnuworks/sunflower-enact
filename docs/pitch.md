@@ -56,8 +56,8 @@ version, the longer one below is background for questions.
 **Highlights slide**
 
 > The full checklist is done in the ENACT plug-in, with the dataspace.
-> We tested thirty moves in a row. Zero requests lost.
-> We also wrote down forty-five problems we found in ENACT, each with a fix.
+> I tested thirty moves in a row. Zero requests lost.
+> I also wrote down forty-five problems I found in ENACT, each with a fix.
 >
 > Everything is in the repo. Thank you.
 
@@ -71,7 +71,7 @@ version, the longer one below is background for questions.
 > the cleanest power. ENACT's job is to run GreenCharge on a computer that also has clean
 > power: you write a rule, "at least sixty percent green", and ENACT picks the machine.
 >
-> We did the whole checklist in the ENACT plug-in. Then we noticed something. ENACT picks the
+> I did the whole checklist in the ENACT plug-in. Then I noticed something. ENACT picks the
 > machine on the day you deploy, and the grid changes every half hour. When that machine's
 > power turns dirty, ENACT notices and names a better one. The app does not move. It keeps
 > running where it was, below its own sixty percent.
@@ -128,20 +128,20 @@ version, the longer one below is background for questions.
 > and carries it out, using the same pin ENACT's plug-in uses. You switch it on for an app
 > with one line.
 >
-> It is careful about when. It ignores short dips. It ignores near-ties, because we measured
+> It is careful about when. It ignores short dips. It ignores near-ties, because I measured
 > ENACT's pick flipping twice in two and a half minutes between two equal machines. It limits
 > how often it moves, and if a move fails it puts the app back.
 >
-> We tested that with thirty moves in a row and nearly eighteen hundred requests. None were
+> I tested that with thirty moves in a row and nearly eighteen hundred requests. None were
 > lost.
 
-## 3:50 to 4:40, what we give back (Highlights slide)
+## 3:50 to 4:40, what I give back (Highlights slide)
 
-> To get here we had to read ENACT's source and run into its rough edges. We wrote every one
-> down with the fix we used: forty-five findings. Two examples. On a fresh cluster the policy
-> never picks a machine at all, for four separate reasons, and our setup script fixes all
+> To get here I had to read ENACT's source and run into its rough edges. I wrote every one
+> down with the fix I used: forty-five findings. Two examples. On a fresh cluster the policy
+> never picks a machine at all, for four separate reasons, and my setup script fixes all
 > four. And ENACT's own assistant gets stuck in a loop on default settings, because half of
-> its instructions are cut off before the model reads them. We found the cause and the fix.
+> its instructions are cut off before the model reads them. I found the cause and the fix.
 >
 > And all five items of the challenge's own checklist are done through the ENACT plug-in,
 > including the dataspace: the carbon figures GreenCharge is using right now came through
@@ -167,7 +167,7 @@ whichever machine has the cleanest power.
 
 | Word | Plain meaning |
 |---|---|
-| Cluster | a group of computers that run apps together; ours is three, simulated on one laptop |
+| Cluster | a group of computers that run apps together; mine is three, simulated on one laptop |
 | Node | one of those computers; on screen they are Machine A and Machine B |
 | Kubernetes | the system that starts apps on those computers and keeps them running |
 | Policy, RuntimePolicy | the rules you give ENACT: which region, how green |
@@ -175,4 +175,4 @@ whichever machine has the cleanest power.
 | Pin | telling Kubernetes "run this app on that exact machine" |
 | Controller | a small program that watches for a change and reacts; Sunflower is one |
 | Hard and Soft rules | Hard must never be broken; Soft is a preference |
-| SDK, plug-in | ENACT's add-on for the Eclipse editor, with the wizards we clicked through |
+| SDK, plug-in | ENACT's add-on for the Eclipse editor, with the wizards I clicked through |

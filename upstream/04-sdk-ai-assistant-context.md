@@ -23,5 +23,5 @@ The step then took one tool call.
 - Send `options.num_ctx` with each request, sized to the prompt.
 - Stop after a few identical tool calls, and show why a call failed.
 - Ask before overwriting an existing policy file.
-- After generating, list any requested fields that are not in the result. In our run the
+- After generating, list any requested fields that are not in the result. In my run the
   policy passed validation but had dropped `location.mode: Hard` and `memory.min`.

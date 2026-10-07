@@ -9,7 +9,7 @@ Sunflower's design follows from this table.
 As installed by the challenge `make setup`, a `RuntimePolicy` never gets a `chosenNode`; its
 status stays at `reason: no available metrics`. Three separate things cause that:
 
-| # | Cause | Observed | What we did |
+| # | Cause | Observed | What I did |
 |---|---|---|---|
 | 1 | `make setup` waits 120 s for every pod, then stops with an error on a first run (image pulls take longer). The node-labelling step after it never runs. | `make: *** [setup] Error 1`; nodes had no `enact.eu/*` labels | Wait until ready, then label |
 | 2 | The monitoring agent is installed with an empty join token, because the Makefile reads the token secret before the monitor API has created it. | Agent log: `403 Invalid join token`; `GET /clusters` returned `[]` | Re-install the agent with the real token |
@@ -56,7 +56,7 @@ Sunflower treats an empty choice as "no decision" and leaves the app where it is
 ## Energy and autoscaling inputs
 
 - The monitor API reports about 85 W for each worker. The two values are nearly identical and
-  the cluster runs in a VM, so these are model estimates, not measurements. We do not
+  the cluster runs in a VM, so these are model estimates, not measurements. I do not
   headline them.
 - `metrics-server` is installed but never becomes ready on Kind (no `--kubelet-insecure-tls`),
   so the standard horizontal autoscaler cannot work on this cluster as shipped.

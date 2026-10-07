@@ -1,8 +1,8 @@
 # Drafts for the ENACT team
 
 Issue drafts written from [`docs/field-report.md`](../docs/field-report.md), grouped so each
-can be filed against one repository. They are drafts: nothing here has been sent on our
-behalf. Each one says what happens, how to see it, and the smallest change that fixed it for us.
+can be filed against one repository. They are drafts: nothing here has been sent on my
+behalf. Each one says what happens, how to see it, and the smallest change that fixed it for me.
 
 | Draft | For | Field-report items |
 |---|---|---|
