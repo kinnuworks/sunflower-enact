@@ -3,9 +3,11 @@
 Five minutes, strict. About 600 words spoken, so the screen has time to do its work. The
 times are where you should be when each part ends.
 
-Before you start: restart the laptop, run `./deploy/scene.sh`, open <http://localhost:35590>
+Before you start: restart the laptop, double-click `Set the stage.command` in the project
+folder (it runs `./deploy/scene.sh`), open <http://localhost:35590>
 full screen, and keep the slides in a second tab. Leave Eclipse, Ollama and spare browser tabs
-closed. Play the day once as a warm-up, then run `./deploy/scene.sh` again for the real one.
+closed. Play the day once as a warm-up, then set the stage again for the real one. The stage has to
+be set before every run: after a run the two copies are on different machines.
 
 If the live run comes out slower than rehearsed, read out what the screen says under the
 right-hand bar. It splits the time into ENACT's part, Sunflower's wait and the move, so you

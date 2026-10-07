@@ -352,7 +352,7 @@ function render(doc, P) {
   const news = notes.filter((r, i) => !passing.includes(r.kind) || (i === notes.length - 1 && r.kind !== 'Placing')).slice(-3).reverse();
   $('latest').innerHTML = `<div class="head">What Sunflower did, and why</div>` + (news.length
     ? news.map((r, i) => `<time class="${i ? 'earlier' : ''}">${clock ? hhmm(clock.timeAt(r.t)) : mmss(r.t)}</time><b class="${i ? 'earlier' : ''}">${esc(DID[r.kind] || r.kind)}</b><span class="${i ? 'earlier' : ''}" title="${esc(plain(r.message))}">${esc(plain(r.message))}</span>`).join('')
-    : `<time></time><b></b><span class="quiet">${doc.recorded ? 'Nothing yet in this recording.' : doc.uneven ? 'The two copies are on different machines, so the comparison would not start level. Run ./deploy/scene.sh in a terminal, then press “Play the day”.' : 'Both copies are up and answering. Press “Play the day” and watch the panel on the right.'}</span>`);
+    : `<time></time><b></b><span class="quiet">${doc.recorded ? 'Nothing yet in this recording.' : doc.uneven ? 'The two copies are on different machines, so the comparison would not start level. Double-click “Set the stage.command” in the project folder (or run ./deploy/scene.sh), then press “Play the day”.' : 'Both copies are up and answering. Press “Play the day” and watch the panel on the right.'}</span>`);
 
   if (doc.grid) {
     const d = clock ? clock.timeAt(P) : new Date(doc.grid.dataTime);
