@@ -5,7 +5,11 @@ times are where you should be when each part ends.
 
 Before you start: restart the laptop, run `./deploy/scene.sh`, open <http://localhost:35590>
 full screen, and keep the slides in a second tab. Leave Eclipse, Ollama and spare browser tabs
-closed.
+closed. Play the day once as a warm-up, then run `./deploy/scene.sh` again for the real one.
+
+If the live run comes out slower than rehearsed, read out what the screen says under the
+right-hand bar. It splits the time into ENACT's part, Sunflower's wait and the move, so you
+can say whose delay it was.
 
 ## 0:00 to 0:40, the problem (title slide)
 
@@ -80,7 +84,7 @@ closed.
 ## 3:50 to 4:40, what we give back (Highlights slide)
 
 > To get here we had to read ENACT's source and run into its rough edges. We wrote every one
-> down with the fix we used: thirty-nine findings. Two examples. On a fresh cluster the policy
+> down with the fix we used: forty findings. Two examples. On a fresh cluster the policy
 > never picks a machine at all, for four separate reasons, and our setup script fixes all
 > four. And ENACT's own assistant gets stuck in a loop on default settings, because half of
 > its instructions are cut off before the model reads them. We found the cause and the fix.

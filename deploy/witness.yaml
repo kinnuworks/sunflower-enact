@@ -64,7 +64,8 @@ spec:
           ports: [{containerPort: 8090}]
           resources:
             requests: {cpu: 20m, memory: 32Mi}
-            limits: {cpu: 300m, memory: 128Mi}
+            # A throttled witness answers late and would count its own delay as a lost request.
+            limits: {cpu: "1", memory: 256Mi}
 ---
 apiVersion: v1
 kind: Service

@@ -29,7 +29,8 @@ At real speed the gap is far wider than four to one. The replay squeezes the day
 so the standard build's 48 seconds stand for the 6 hours Machine A's grid stayed below 60%.
 Sunflower's wait and move do not stretch with the day. With its default 20-second wait and
 the 3.5-second move we measured, it would be on dirty power for about 24 seconds, plus however
-long ENACT takes to change its pick, which was up to about a minute in our tests. That second
+long ENACT takes to change its pick. That was under a second in the three clean runs and 18
+seconds in the worst one. That second
 figure is worked out from the measurements; the replay figures are measured directly.
 
 The run is saved as measured in [`docs/demo/run.json`](docs/demo/run.json). To watch it play back:
@@ -84,6 +85,7 @@ and [`docs/demo/`](docs/demo).
 | Test | Result |
 |---|---|
 | The replayed day, three runs in a row | 506, 507 and 523 requests to each copy, none lost. Standard build: 48 s on dirty power each time. Sunflower: 12, 12 and 13 s, with moves of 3.5, 3.6 and 4.1 s |
+| The same day with ENACT's monitor API restarting | Sunflower cannot move before ENACT names another machine. In this run that took 18 s, because the monitor API had just been killed for answering a health check late, and the operator kept its old pick meanwhile. Sunflower spent 39 s on dirty power against the standard build's 48 s, none lost. `deploy/steady.sh` now gives the monitor API room |
 | The same day before we warmed the app up | on a busy laptop the move took 14.7 s and 4 of 529 requests to the moving copy were lost. The new copy's first requests took over 2 s on a cold JVM |
 | 30 forced moves in a row | all completed. 1,777 requests to the moving copy, none lost. Median move 3.6 s, slowest 5.5 s |
 | The same test before the warm-up and the two-core limit | 30 moves, 2,632 requests, none lost. Median move 8.8 s, slowest 15.3 s |
@@ -95,8 +97,8 @@ rate that does not slow down when the app does, so a stall shows up as lost requ
 
 The lost requests in the fourth row are why GreenCharge now calls its own endpoints 40 times
 before it reports itself ready ([`WarmUp.java`](greencharge/src/main/java/eu/enact/greencharge/placement/WarmUp.java))
-and runs with a two-core limit. The three clean runs were made after that change. All four
-runs are saved in [`evidence/scene-runs/`](evidence/scene-runs).
+and runs with a two-core limit. The three clean runs were made after that change. Every run
+named here is saved in [`evidence/scene-runs/`](evidence/scene-runs), the bad ones included.
 
 ## The challenge checklist
 
@@ -121,7 +123,7 @@ it recommends `relocate`.
 
 ## What we found in ENACT along the way
 
-We wrote down each problem we hit, with the fix we used: 39 findings in
+We wrote down each problem we hit, with the fix we used: 40 findings in
 [`docs/field-report.md`](docs/field-report.md), and five issue drafts for the ENACT team in
 [`upstream/`](upstream). Four that a new user meets on day one:
 

@@ -86,6 +86,9 @@ label() {
 label enact-dev-worker  '{"add":{"enact.eu/green-ratio":"0.85","enact.eu/role":"edge","enact.eu/region":"eu-west","enact.eu/zone":"eu-west-1a"}}'
 label enact-dev-worker2 '{"add":{"enact.eu/green-ratio":"0.9","enact.eu/role":"cloud","enact.eu/region":"eu-west","enact.eu/zone":"eu-west-2a"}}'
 
+say "Giving the ENACT components room to stay up"
+"$HERE/steady.sh"
+
 if [ "${LEAN:-1}" = "1" ]; then
   say "Pausing dashboards that are not needed between screenshots (LEAN=0 keeps them)"
   # On a laptop the full stack leaves little headroom: an image load on top of it was enough

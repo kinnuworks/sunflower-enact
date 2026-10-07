@@ -90,6 +90,8 @@ One step done through the assistant on 2026-10-06: `generate_runtime_policy`, wi
 | 38 | The brief's Monitor step says to watch the "Energy" and "LoadBalancer" dashboards. The cluster ships Grafana with the stock Kubernetes dashboards only; there is no Energy, LoadBalancer or Kepler dashboard, although the setup guide says Kepler energy tracking is pre-configured. | Ran | Wrote a four-panel dashboard from metrics that are present (`deploy/monitor/dashboard.json`) |
 | 39 | The API server, scheduler and controller manager restart in a loop when the laptop is busy, and the cluster does not recover by itself. The SDK-generated probes (1 s timeout, no startup probe) make it worse: each JVM they restart adds load. We lost the cluster twice this way. | Ran | Paused Grafana, Alertmanager, Hubble UI, kube-state-metrics and metrics-server by default (`deploy/dashboards.sh`); gave our own chart a 4 s probe timeout |
 
+| 40 | The monitor API ships with a 100m CPU limit and a liveness probe that times out after 1 s. With the policy operator querying it on every node change it is throttled, fails the probe and is killed (exit 137); we counted six restarts in eight hours. Each restart pulls the image again (`imagePullPolicy: Always`). While it is down the operator logs `Failed to fetch cluster metrics` on every pass and keeps its previous `chosenNode`. In one run that left a policy naming a node below its green minimum for 18 s. | Ran | `deploy/steady.sh`: one CPU and a 5 s probe timeout for the monitor API, `IfNotPresent` for the three ENACT deployments |
+
 ## To be completed
 
 The Dataspaces module is added once it has been run.

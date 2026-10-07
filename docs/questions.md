@@ -53,12 +53,19 @@ up, switch the traffic, stop the first. The app answers every request throughout
 a setting. At zero the total would be about four seconds, and it would then move for every
 short dip.
 
+**What if ENACT is slow to change its pick?**
+Then Sunflower waits, because it only goes where ENACT says. We saw this once: ENACT's
+monitor service had been restarted for answering a health check late, and its pick froze for
+18 seconds. Sunflower moved as soon as the pick changed. The screen shows that delay
+separately, so it is clear whose time it was. We now give that service more room, and it is
+finding 40 in our report.
+
 **Why 48 seconds and 12? Those are small.**
 They are replayed seconds. Half an hour of grid data passes every four seconds, so the
 standard build's 48 seconds are six hours of the real day. Sunflower's 12 seconds do not
 scale the same way, because its wait and its move take the same time at any speed. With the
-default 20-second wait and the 3.5-second move we measured, that is about 24 seconds, plus up
-to a minute for ENACT to change its pick. The screen shows both real-speed figures under the
+default 20-second wait and the 3.5-second move we measured, that is about 24 seconds, plus
+however long ENACT takes to change its pick. The screen shows both real-speed figures under the
 timers. The six hours follow from the data; the 24 seconds are worked out, not yet run.
 
 **Did you do the dataspace step?**

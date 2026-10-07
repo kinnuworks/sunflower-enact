@@ -63,7 +63,7 @@ x = set_body(x, [
     para([run('Start with the README: ', sz=1300, b=True), run('the result, the challenge checklist with a screenshot of every SDK step, and how to run it.', sz=1300)], bullet=True),
     para([run('A recorded run you can play in a browser: ', sz=1300, b=True), run('docs/demo, drawn from the measured data, unedited.', sz=1300)], bullet=True),
     para([run('The raw results: ', sz=1300, b=True), run('evidence/ holds the file behind every number we quote.', sz=1300)], bullet=True),
-    para([run('What we are giving back to ENACT: ', sz=1300, b=True), run('docs/field-report.md, 39 findings, each with the fix we used.', sz=1300)], bullet=True),
+    para([run('What we are giving back to ENACT: ', sz=1300, b=True), run('docs/field-report.md, 40 findings, each with the fix we used.', sz=1300)], bullet=True),
     para([run('Licence: Apache-2.0', sz=1300)], bullet=True, after=0),
 ])
 save(2, x)
@@ -87,7 +87,7 @@ x = slide(4)
 CW = 2700000; X0 = 311700; GAP = 210300; Y = 1180000
 stats = [('0', 'requests lost', 'across 30 moves in a row, 1,777 requests, on the challenge cluster'),
          ('48 → 12 s', 'on dirty power', 'in the replay. At real speed: 6 hours for the standard build, about 24 seconds with Sunflower'),
-         ('39', 'findings given back', 'problems we hit in ENACT, each written up with the fix we used')]
+         ('40', 'findings given back', 'problems we hit in ENACT, each written up with the fix we used')]
 shapes = []
 for k, (big, label, small) in enumerate(stats):
     cx = X0 + k * (CW + GAP)

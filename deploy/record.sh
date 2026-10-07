@@ -3,7 +3,8 @@
 # the race screen that plays it back (docs/demo). The saved file is the witness's own data,
 # unedited: every request, each machine's green share, the policy operator's pick and
 # Sunflower's log.
-# Usage: deploy/record.sh [name]     ->  docs/demo/<name>.json   (default: run)
+# Usage: deploy/record.sh [name]     ->  docs/demo/<name>.json   (default: run, which is the
+# one docs/demo/index.html plays)
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$(dirname "$HERE")"
 NAME="${1:-run}"; WITNESS=http://localhost:35590; OUT="$ROOT/docs/demo"
@@ -30,9 +31,4 @@ for t in sorted(state["totals"], key=lambda t: t["target"]):
           f'{t["outOfPolicySeconds"]:.0f} s below its green rule, served by {t["byNode"]}')
 PY
 rm -rf "$OUT/fonts"; cp -R "$ROOT/witness/web/fonts" "$OUT/fonts"; cp "$ROOT/witness/web/index.html" "$OUT/screen.html"
-cat > "$OUT/index.html" <<HTML
-<!doctype html><meta charset="utf-8"><title>Sunflower: recorded run</title>
-<meta http-equiv="refresh" content="0; url=screen.html?recording=$NAME.json">
-<a href="screen.html?recording=$NAME.json">Play the recorded run</a>
-HTML
 echo "saved $OUT/$NAME.json"

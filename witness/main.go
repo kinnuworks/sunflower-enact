@@ -388,6 +388,10 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/state", func(w http.ResponseWriter, r *http.Request) {
 		totals, recent := h.snapshot()
+		if r.URL.Query().Has("lite") { // the screen asks twice a second and needs neither list
+			writeJSON(w, map[string]any{"totals": totals, "cluster": cluster.snapshot(), "slowMs": *slowMs})
+			return
+		}
 		writeJSON(w, map[string]any{"totals": totals, "recent": recent, "cluster": cluster.snapshot(), "slowMs": *slowMs, "failures": h.failed()})
 	})
 	mux.HandleFunc("GET /api/timeline", func(w http.ResponseWriter, r *http.Request) {
